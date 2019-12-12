@@ -7,8 +7,8 @@ describe('upload-changed', () => {
   });
 
   it('no dbFile, dryRun', async () => {
-    fs.copySync('test/data/test.png', 'temp/test[a].png');
-    fs.copySync('test/data/test.png', 'temp/test[b].png');
+    fs.copySync('test/data/alice.png', 'temp/alice[a].png');
+    fs.copySync('test/data/phone.png', 'temp/phone[b].png');
 
     const result = await imageManager.uploadChanged({
       pattern: 'temp/*.png',
@@ -16,115 +16,83 @@ describe('upload-changed', () => {
       dryRun: true,
     });
 
-    assert.deepEqual(result, [
-      {
-        file: 'temp/test[a].png',
-        localId: 'a',
-        mtimeMs: fs.statSync('temp/test[a].png').mtimeMs,
-        upload: true,
-      },
-      {
-        file: 'temp/test[b].png',
-        localId: 'b',
-        mtimeMs: fs.statSync('temp/test[b].png').mtimeMs,
-        upload: true,
-      }
-    ]);
+    assert.deepEqual(result, {
+      uploaded: [
+        'temp/alice[a].png',
+        'temp/phone[b].png'
+      ],
+      skipped: [],
+    });
   });
 
   it('upload + create dbFile', async () => {
-    fs.copySync('test/data/test.png', 'temp/test[a].png');
-    fs.copySync('test/data/test.png', 'temp/test[b].png');
+    fs.copySync('test/data/alice.png', 'temp/alice[a].png');
+    fs.copySync('test/data/phone.png', 'temp/phone[b].png');
 
     const result = await imageManager.uploadChanged({
       pattern: 'temp/*.png',
       dbFile: 'temp/images.json',
     });
 
-    const remoteItems = await imageManager.getItems();
-    const remoteItemA = remoteItems.find(item => item.id === result[0].id);
-    const remoteItemB = remoteItems.find(item => item.id === result[1].id);
+    const remoteItems = (await imageManager.getItems()).sort((a, b) => a.size - b.size);
     assert.lengthOf(remoteItems, 2);
-    assert.deepEqual(result, [
-      {
-        file: 'temp/test[a].png',
-        localId: 'a',
-        id: remoteItemA.id,
-        mtimeMs: fs.statSync('temp/test[a].png').mtimeMs,
-        upload: true,
-      },
-      {
-        file: 'temp/test[b].png',
-        localId: 'b',
-        id: remoteItemB.id,
-        mtimeMs: fs.statSync('temp/test[b].png').mtimeMs,
-        upload: true,
-      }
-    ]);
+    assert.deepEqual(result, {
+      uploaded: [ 'temp/alice[a].png', 'temp/phone[b].png' ],
+      skipped: [],
+    });
 
     const dbFileData = fs.readJsonSync('temp/images.json');
     assert.deepEqual(dbFileData, {
       ids: {
-        a: remoteItemA.id,
-        b: remoteItemB.id,
+        a: remoteItems[0].id,
+        b: remoteItems[1].id,
       },
       meta: {
         a: {
-          file: 'temp/test[a].png',
-          mtimeMs: result[0].mtimeMs,
+          file: 'temp/alice[a].png',
+          mtimeMs: fs.statSync('temp/alice[a].png').mtimeMs,
         },
         b: {
-          file: 'temp/test[b].png',
-          mtimeMs: result[1].mtimeMs,
+          file: 'temp/phone[b].png',
+          mtimeMs: fs.statSync('temp/phone[b].png').mtimeMs,
         },
       }
     });
 
     // вызываем uploadChanged еще раз с теми же параметрами - ничего загрузиться не должно
     // (заодно переименовываем 1 файл)
-    fs.moveSync('temp/test[a].png', 'temp/test-[a].png');
+    fs.moveSync('temp/alice[a].png', 'temp/alice-[a].png');
     const result2 = await imageManager.uploadChanged({
       pattern: 'temp/*.png',
       dbFile: 'temp/images.json',
     });
 
-    const remoteItems2 = await imageManager.getItems();
+    const remoteItems2 = (await imageManager.getItems()).sort((a, b) => a.size - b.size);
     assert.deepEqual(remoteItems2, remoteItems);
-    assert.deepEqual(result2, [
-      {
-        file: 'temp/test-[a].png',
-        localId: 'a',
-        id: remoteItemA.id,
-        mtimeMs: result[0].mtimeMs,
-      },
-      {
-        file: 'temp/test[b].png',
-        localId: 'b',
-        id: remoteItemB.id,
-        mtimeMs: result[1].mtimeMs,
-      }
-    ]);
-    dbFileData.meta.a.file = 'temp/test-[a].png';
+    assert.deepEqual(result2, {
+      uploaded: [],
+      skipped: [ 'temp/alice-[a].png', 'temp/phone[b].png'],
+    });
+    dbFileData.meta.a.file = 'temp/alice-[a].png';
     assert.deepEqual(fs.readJsonSync('temp/images.json'), dbFileData);
   });
 
   it('upload changes: new file, mtime changed, removed from server', async () => {
-    fs.copySync('test/data/test.png', 'temp/test[a].png');
-    fs.copySync('test/data/test.png', 'temp/test[b].png');
+    fs.copySync('test/data/alice.png', 'temp/alice[a].png');
+    fs.copySync('test/data/phone.png', 'temp/phone[b].png');
 
-    const result = await imageManager.uploadChanged({
+    await imageManager.uploadChanged({
       pattern: 'temp/*.png',
       dbFile: 'temp/images.json',
     });
 
-    const remoteItems = await imageManager.getItems();
-    const remoteItemA = remoteItems.find(item => item.id === result[0].id);
+    const [itemA] = (await imageManager.getItems()).sort((a, b) => a.size - b.size);
 
     // добавляем новый файл "c"
-    fs.copySync('test/data/test.png', 'temp/test[c].png');
+    fs.copySync('test/data/tools.png', 'temp/tools[c].png');
 
-    // удаляем на сервере файла "a"
-    await imageManager.delete(remoteItemA.id);
+    // удаляем на сервере файл "a"
+    await imageManager.delete(itemA.id);
 
     // меняем файл "b"
     const dbFileData = fs.readJsonSync('temp/images.json');
@@ -137,37 +105,43 @@ describe('upload-changed', () => {
       dbFile: 'temp/images.json',
     });
 
-    assert.lengthOf(result2, 3);
+    assert.deepEqual(result2, {
+      uploaded: [ 'temp/alice[a].png', 'temp/phone[b].png', 'temp/tools[c].png' ],
+      skipped: []
+    });
+    const remoteItems = (await imageManager.getItems()).sort((a, b) => a.size - b.size);
     assert.lengthOf(await imageManager.getItems(), 4);
-    assert.notEqual(result2[0].id, result[0].id);
-    assert.notEqual(result2[1].id, result[1].id);
+    const dbFileData2 = fs.readJsonSync('temp/images.json');
+    assert.notEqual(dbFileData2.ids.a, dbFileData.ids.a);
+    assert.notEqual(dbFileData2.ids.b, dbFileData.ids.b);
     assert.deepEqual(fs.readJsonSync('temp/images.json'), {
       ids: {
-        a: result2[0].id,
-        b: result2[1].id,
-        c: result2[2].id,
+        a: remoteItems[0].id,
+        b: remoteItems[1].id,
+        // remoteItems[2] is previous version of phone[b].png
+        c: remoteItems[3].id,
       },
       meta: {
         a: {
-          file: 'temp/test[a].png',
+          file: 'temp/alice[a].png',
           mtimeMs: dbFileData.meta.a.mtimeMs,
         },
         b: {
-          file: 'temp/test[b].png',
-          mtimeMs: fs.statSync('temp/test[b].png').mtimeMs,
+          file: 'temp/phone[b].png',
+          mtimeMs: fs.statSync('temp/phone[b].png').mtimeMs,
         },
         c: {
-          file: 'temp/test[c].png',
-          mtimeMs: fs.statSync('temp/test[c].png').mtimeMs,
+          file: 'temp/tools[c].png',
+          mtimeMs: fs.statSync('temp/tools[c].png').mtimeMs,
         },
       }
     });
   });
 
   it('duplicated localId', async () => {
-    fs.copySync('test/data/test.png', 'temp/test[a].png');
-    fs.copySync('test/data/test.png', 'temp/test[ a ].png');
-    fs.copySync('test/data/test.png', 'temp/test-[a].png');
+    fs.copySync('test/data/alice.png', 'temp/alice[a].png');
+    fs.copySync('test/data/alice.png', 'temp/alice[ a ].png');
+    fs.copySync('test/data/alice.png', 'temp/alice-[a].png');
     const promise = imageManager.uploadChanged({
       pattern: 'temp/*.png',
       dbFile: 'temp/images.json',
@@ -176,14 +150,14 @@ describe('upload-changed', () => {
 
     await assert.rejects(promise, e => {
       assert.equal(e.message.replace(/\s/g, ''),
-        'ДубликатыlocalId:{"a":["temp/test-[a].png","temp/test[a].png","temp/test[a].png"]}'
+        'ДубликатыlocalId:{"a":["temp/alice-[a].png","temp/alice[a].png","temp/alice[a].png"]}'
       );
       return true;
     });
   });
 
   it('no localId', async () => {
-    fs.copySync('test/data/test.png', 'temp/test1.png');
+    fs.copySync('test/data/alice.png', 'temp/alice1.png');
     const promise = imageManager.uploadChanged({
       pattern: 'temp/*.png',
       dbFile: 'temp/images.json',
@@ -191,13 +165,13 @@ describe('upload-changed', () => {
     });
 
     await assert.rejects(promise, e => {
-      assert.include(e.message, 'getLocalId() вернула "null" для файла: temp/test1.png');
+      assert.include(e.message, 'getLocalId() вернула "null" для файла: temp/alice1.png');
       return true;
     });
   });
 
   it('empty localId', async () => {
-    fs.copySync('test/data/test.png', 'temp/test[].png');
+    fs.copySync('test/data/alice.png', 'temp/alice[].png');
     const promise = imageManager.uploadChanged({
       pattern: 'temp/*.png',
       dbFile: 'temp/images.json',
@@ -205,13 +179,13 @@ describe('upload-changed', () => {
     });
 
     await assert.rejects(promise, e => {
-      assert.include(e.message, 'getLocalId() вернула "null" для файла: temp/test[].png');
+      assert.include(e.message, 'getLocalId() вернула "null" для файла: temp/alice[].png');
       return true;
     });
   });
 
   it('empty localId with spaces', async () => {
-    fs.copySync('test/data/test.png', 'temp/test[ ].png');
+    fs.copySync('test/data/alice.png', 'temp/alice[ ].png');
     const promise = imageManager.uploadChanged({
       pattern: 'temp/*.png',
       dbFile: 'temp/images.json',
@@ -219,7 +193,7 @@ describe('upload-changed', () => {
     });
 
     await assert.rejects(promise, e => {
-      assert.include(e.message, 'getLocalId() вернула "" для файла: temp/test[ ].png');
+      assert.include(e.message, 'getLocalId() вернула "" для файла: temp/alice[ ].png');
       return true;
     });
   });

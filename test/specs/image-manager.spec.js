@@ -7,7 +7,7 @@ describe('image-manager', () => {
   it('upload + getItems / getItem + delete', async () => {
     assert.lengthOf(await imageManager.getItems(), 0);
 
-    const uploadResult = await imageManager.upload('test/data/test.png');
+    const uploadResult = await imageManager.upload('test/data/alice.png');
     assert.hasAllKeys(uploadResult, ['id', 'size', 'createdAt']);
 
     const items = await imageManager.getItems();

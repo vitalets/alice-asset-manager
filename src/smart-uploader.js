@@ -42,7 +42,10 @@ module.exports = class SmartUploader {
       await this._upload();
       this._saveDbFile();
     }
-    return this._localItems;
+    return {
+      uploaded: this._localItems.filter(item => item.upload).map(item => item.file),
+      skipped: this._localItems.filter(item => !item.upload).map(item => item.file),
+    };
   }
 
   _markLocalItemsForUpload() {
