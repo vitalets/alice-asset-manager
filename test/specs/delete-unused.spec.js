@@ -30,7 +30,9 @@ describe('delete-unused', () => {
     const remoteItems = (await imageManager.getItems()).sort((a, b) => a.size - b.size);
     assert.lengthOf(remoteItems, 2);
     assert.deepEqual(result, {
-      deleted: [ remoteItems[1].id ],
+      deleted: [
+        `https://avatars.mds.yandex.net/get-dialogs-skill-card/${remoteItems[1].id}/orig`
+      ],
       used: [ 'temp/alice[a].png' ]
     });
 

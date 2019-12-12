@@ -14,26 +14,52 @@ module.exports = class SoundManager extends BaseManager {
   constructor({ token, skillId }) {
     const restUrl = `/skills/${skillId}/sounds`;
     super({ token, restUrl });
+    this._skillId = skillId;
   }
 
   async getQuota() {
-    return (await super.getQuota()).sounds.quota;
+    const { sounds } = await super.getQuota();
+    return sounds.quota;
   }
 
   async getItems() {
-    return (await super.getItems()).sounds;
+    const result = await super.getItems();
+    return result.sounds.map(sound => {
+      return {
+        ...sound,
+        url: this.getUrl(sound.id)
+      };
+    });
   }
 
   async getItem(soundId) {
-    return (await super.getItem(soundId)).sound;
+    const { sound } = await super.getItem(soundId);
+    return {
+      ...sound,
+      url: this.getUrl(sound.id)
+    };
   }
 
   async upload(filePath) {
-    return (await super.upload(filePath)).sound;
+    const { sound } = await super.upload(filePath);
+    return {
+      ...sound,
+      url: this.getUrl(sound.id)
+    };
   }
 
   async delete(soundId) {
-    return super.delete(soundId);
+    await super.delete(soundId);
+    return this.getUrl(soundId);
+  }
+
+  /**
+   * Returns url for sound.
+   *
+   * @param {string} soundId
+   */
+  getUrl(soundId) {
+    return `https://yastatic.net/s3/dialogs/dialogs-upload/sounds/opus/${this._skillId}/${soundId}.opus`;
   }
 
   /**

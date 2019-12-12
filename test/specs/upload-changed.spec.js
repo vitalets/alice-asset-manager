@@ -51,10 +51,12 @@ describe('upload-changed', () => {
       meta: {
         a: {
           file: 'temp/alice[a].png',
+          url: `https://avatars.mds.yandex.net/get-dialogs-skill-card/${remoteItems[0].id}/orig`,
           mtimeMs: fs.statSync('temp/alice[a].png').mtimeMs,
         },
         b: {
           file: 'temp/phone[b].png',
+          url: `https://avatars.mds.yandex.net/get-dialogs-skill-card/${remoteItems[1].id}/orig`,
           mtimeMs: fs.statSync('temp/phone[b].png').mtimeMs,
         },
       }
@@ -125,14 +127,17 @@ describe('upload-changed', () => {
       meta: {
         a: {
           file: 'temp/alice[a].png',
+          url: `https://avatars.mds.yandex.net/get-dialogs-skill-card/${remoteItems[0].id}/orig`,
           mtimeMs: dbFileData.meta.a.mtimeMs,
         },
         b: {
           file: 'temp/phone[b].png',
+          url: `https://avatars.mds.yandex.net/get-dialogs-skill-card/${remoteItems[1].id}/orig`,
           mtimeMs: fs.statSync('temp/phone[b].png').mtimeMs,
         },
         c: {
           file: 'temp/tools[c].png',
+          url: `https://avatars.mds.yandex.net/get-dialogs-skill-card/${remoteItems[3].id}/orig`,
           mtimeMs: fs.statSync('temp/tools[c].png').mtimeMs,
         },
       }

@@ -17,11 +17,18 @@ module.exports = class ImageManager extends BaseManager {
   }
 
   async getQuota() {
-    return (await super.getQuota()).images.quota;
+    const { images } = await super.getQuota();
+    return images.quota;
   }
 
   async getItems() {
-    return (await super.getItems()).images;
+    const result = await super.getItems();
+    return result.images.map(image => {
+      return {
+        ...image,
+        url: this.getUrl(image.id)
+      };
+    });
   }
 
   async getItem(imageId) {
@@ -30,11 +37,25 @@ module.exports = class ImageManager extends BaseManager {
   }
 
   async upload(filePath) {
-    return (await super.upload(filePath)).image;
+    const { image } = await super.upload(filePath);
+    return {
+      ...image,
+      url: this.getUrl(image.id)
+    };
   }
 
   async delete(imageId) {
-    return super.delete(imageId);
+    await super.delete(imageId);
+    return this.getUrl(imageId);
+  }
+
+  /**
+   * Returns url for image.
+   *
+   * @param {string} imageId
+   */
+  getUrl(imageId) {
+    return `https://avatars.mds.yandex.net/get-dialogs-skill-card/${imageId}/orig`;
   }
 
   /**

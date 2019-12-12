@@ -65,7 +65,7 @@ module.exports = class SmartUploader {
     }
     const {ids, meta} = this._dbFileData;
     return {
-      deleted: unusedRemoteIds,
+      deleted: unusedRemoteIds.map(id => this._manager.getUrl(id)),
       used: Object.keys(ids)
         .filter(localId => !unusedRemoteIds.includes(ids[localId]))
         .map(localId => meta[localId].file)
@@ -155,7 +155,8 @@ module.exports = class SmartUploader {
     };
     this._localItems.forEach(({file, localId, mtimeMs, id}) => {
       newDbFileData.ids[localId] = id;
-      newDbFileData.meta[localId] = { file, mtimeMs };
+      const url = this._manager.getUrl(id);
+      newDbFileData.meta[localId] = { file, url, mtimeMs };
     });
     fs.outputJsonSync(this._dbFile, newDbFileData, {spaces: 2});
   }
