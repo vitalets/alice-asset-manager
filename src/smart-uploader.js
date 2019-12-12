@@ -48,6 +48,30 @@ module.exports = class SmartUploader {
     };
   }
 
+  /**
+   * Delete items not in dbFile.
+   *
+   * @param {string} dbFile
+   * @param {boolean} [dryRun=false]
+   * @returns {Promise}
+   */
+  async deleteUnused({dbFile, dryRun}) {
+    this._readDbFile(dbFile);
+    await this._loadRemoteItems();
+    const unusedRemoteIds = this._getUnusedRemoteIds();
+    if (!dryRun) {
+      const tasks = unusedRemoteIds.map(id => this._manager.delete(id));
+      await Promise.all(tasks);
+    }
+    const {ids, meta} = this._dbFileData;
+    return {
+      deleted: unusedRemoteIds,
+      used: Object.keys(ids)
+        .filter(localId => !unusedRemoteIds.includes(ids[localId]))
+        .map(localId => meta[localId].file)
+    };
+  }
+
   _markLocalItemsForUpload() {
     this._localItems.forEach(localItem => this._markLocalItemForUpload(localItem));
   }
@@ -100,6 +124,15 @@ module.exports = class SmartUploader {
         mtimeMs: meta[localId] && meta[localId].mtimeMs,
       };
     }
+  }
+
+  _getUnusedRemoteIds() {
+    throwIf(!this._dbFileData, `dbFile not found: ${this._dbFile}`);
+    const { ids } = this._dbFileData;
+    const usedIds = Object.values(ids);
+    return this._remoteItems
+      .map(item => item.id)
+      .filter(id => !usedIds.includes(id));
   }
 
   _hasRemoteItem(id) {

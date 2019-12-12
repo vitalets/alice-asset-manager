@@ -57,25 +57,6 @@ module.exports = class BaseManager {
     throwIf(!result || result.result !== 'ok', `Error while deleting item ${url}: ${result}`);
   }
 
-  /**
-   * Delete items not in dbFile.
-   *
-   * @param {string} dbFile
-   * @param {boolean} [dryRun=false]
-   * @returns {Promise}
-   */
-  async deleteUnused({dbFile, dryRun}) {
-    const { meta } = fs.readJsonSync(dbFile);
-    const items = await this.getItems();
-    const usedIds = Object.keys(meta).map(key => meta[key].id);
-    const unusedItems = items.filter(item => !usedIds.includes(item.id));
-    if (!dryRun) {
-      const tasks = unusedItems.map(item => this.delete(item.id));
-      await Promise.all(tasks);
-    }
-    return unusedItems;
-  }
-
   async _request(url, options = {}) {
     const fullUrl = `${BASE_URL}${url}`;
     options.headers = Object.assign({

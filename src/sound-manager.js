@@ -49,4 +49,16 @@ module.exports = class SoundManager extends BaseManager {
     const uploader = new SmartUploader(this);
     return uploader.uploadChanged({pattern, dbFile, dryRun, getLocalId});
   }
+
+  /**
+   * Delete items not found in dbFile (actually not used in skill).
+   *
+   * @param {string} dbFile
+   * @param {boolean} [dryRun=false]
+   * @returns {Promise}
+   */
+  async deleteUnused({ dbFile, dryRun}) {
+    const uploader = new SmartUploader(this);
+    return uploader.deleteUnused({ dbFile, dryRun });
+  }
 };

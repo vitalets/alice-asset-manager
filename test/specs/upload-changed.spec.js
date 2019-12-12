@@ -6,7 +6,7 @@ describe('upload-changed', () => {
     fs.emptyDirSync('temp');
   });
 
-  it('no dbFile, dryRun', async () => {
+  it('dryRun', async () => {
     fs.copySync('test/data/alice.png', 'temp/alice[a].png');
     fs.copySync('test/data/phone.png', 'temp/phone[b].png');
 
@@ -16,6 +16,7 @@ describe('upload-changed', () => {
       dryRun: true,
     });
 
+    assert.lengthOf(await imageManager.getItems(), 0);
     assert.deepEqual(result, {
       uploaded: [
         'temp/alice[a].png',
