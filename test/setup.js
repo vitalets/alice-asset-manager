@@ -31,6 +31,6 @@ beforeEach(async () => {
 
 async function deleteAllItems(manager) {
   const items = await manager.getItems();
-  const tasks = items.map(item => manager.delete(item.id));
+  const tasks = items.map(async item => manager.delete(item.id));
   await Promise.all(tasks);
 }

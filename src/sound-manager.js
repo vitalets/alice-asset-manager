@@ -2,6 +2,7 @@
  * Sound manager.
  */
 const BaseManager = require('./base-manager');
+const SmartUploader = require('./smart-uploader');
 
 module.exports = class SoundManager extends BaseManager {
   /**
@@ -33,5 +34,19 @@ module.exports = class SoundManager extends BaseManager {
 
   async delete(soundId) {
     return super.delete(soundId);
+  }
+
+  /**
+   * Uploads changed items from directory and updates dbFile.
+   *
+   * @param {string} pattern
+   * @param {string} dbFile
+   * @param {function} getLocalId
+   * @param {boolean} [dryRun=false]
+   * @returns {Promise}
+   */
+  async uploadChanged({pattern, dbFile, dryRun, getLocalId}) {
+    const uploader = new SmartUploader(this);
+    return uploader.uploadChanged({pattern, dbFile, dryRun, getLocalId});
   }
 };

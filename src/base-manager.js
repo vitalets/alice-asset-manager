@@ -1,10 +1,12 @@
-const fs = require('fs');
+const fs = require('fs-extra');
 const path = require('path');
 const fetch = require('node-fetch');
 const FormData = require('form-data');
 const {throwIf} = require('throw-utils');
+const {stringify} = require('./utils');
 
 const BASE_URL = 'https://dialogs.yandex.net/api/v1';
+const REQUEST_TIMEOUT = 5000;
 
 module.exports = class BaseManager {
   /**
@@ -12,10 +14,12 @@ module.exports = class BaseManager {
    *
    * @param token
    * @param restUrl
+   * @param timeout
    */
-  constructor({ token, restUrl }) {
+  constructor({ token, restUrl, timeout }) {
     this._token = token;
     this._restUrl = restUrl;
+    this._timeout = timeout || REQUEST_TIMEOUT;
   }
 
   async getQuota() {
@@ -27,7 +31,7 @@ module.exports = class BaseManager {
   }
 
   async getItem(id) {
-    BaseManager._assertItemId(id);
+    throwIf(!stringify(id), `Empty item id: ${id}`);
     return this._request(`${this._restUrl}/${id}`);
   }
 
@@ -47,38 +51,37 @@ module.exports = class BaseManager {
    * @returns {Promise}
    */
   async delete(id) {
-    BaseManager._assertItemId(id);
+    throwIf(!stringify(id), `Empty item id: ${id}`);
     const url = `${this._restUrl}/${id}`;
     const result = await this._request(url, {method: 'delete'});
     throwIf(!result || result.result !== 'ok', `Error while deleting item ${url}: ${result}`);
   }
 
-  // /**
-  //  * Uploads changed images from directory and updates dbFile.
-  //  *
-  //  * @param dir
-  //  * @param dbFile
-  //  * @param getId
-  //  * @returns {Promise}
-  //  */
-  // async uploadChanged({dir, dbFile, getId}) {
-  //
-  // }
-  //
-  // /**
-  //  * Uploads changed images from directory and updates dbFile.
-  //  *
-  //  * @param dbFile
-  //  * @param dryRun
-  //  * @returns {Promise}
-  //  */
-  // async deleteUnused({dbFile, dryRun}) {
-  //
-  // }
+  /**
+   * Delete items not in dbFile.
+   *
+   * @param {string} dbFile
+   * @param {boolean} [dryRun=false]
+   * @returns {Promise}
+   */
+  async deleteUnused({dbFile, dryRun}) {
+    const { meta } = fs.readJsonSync(dbFile);
+    const items = await this.getItems();
+    const usedIds = Object.keys(meta).map(key => meta[key].id);
+    const unusedItems = items.filter(item => !usedIds.includes(item.id));
+    if (!dryRun) {
+      const tasks = unusedItems.map(item => this.delete(item.id));
+      await Promise.all(tasks);
+    }
+    return unusedItems;
+  }
 
   async _request(url, options = {}) {
     const fullUrl = `${BASE_URL}${url}`;
-    options.headers = Object.assign({ Authorization: `OAuth ${this._token}` }, options.headers);
+    options.headers = Object.assign({
+      Authorization: `OAuth ${this._token}`,
+      timeout: this._timeout,
+    }, options.headers);
     const response = await fetch(fullUrl, options);
     if (response.ok) {
       return response.json();
@@ -87,10 +90,5 @@ module.exports = class BaseManager {
       const method = (options.method || 'get').toUpperCase();
       throw new Error(`${response.status} ${text} ${method} ${url}`);
     }
-  }
-
-  static _assertItemId(id) {
-    id = typeof id === 'number' ? String(id) : id;
-    throwIf(!id, `Empty item id: ${id}`);
   }
 };

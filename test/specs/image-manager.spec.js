@@ -1,3 +1,4 @@
+
 describe('image-manager', () => {
   it('getQuota', async () => {
     assert.hasAllKeys(await imageManager.getQuota(), ['total', 'used']);

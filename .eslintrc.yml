@@ -19,3 +19,4 @@ rules:
   max-lines: [error, {max: 200, skipComments: true, skipBlankLines: true}]
   semi: [error, always]
   space-before-function-paren: [error, {anonymous: always, named: never, asyncArrow: always}]
+  require-atomic-updates: 0
