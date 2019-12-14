@@ -10,7 +10,7 @@ describe('sound-manager', () => {
     assert.lengthOf(await soundManager.getItems(), 0);
 
     const uploadResult = await soundManager.upload('test/data/test.mp3');
-    assert.containsAllKeys(uploadResult, ['id', 'originalName', 'createdAt', 'url']);
+    assert.containsAllKeys(uploadResult, ['id', 'originalName', 'createdAt', 'tts', 'url']);
     assert.equal(uploadResult.isProcessed, false);
     assert.equal(uploadResult.size, null);
     assert.equal(uploadResult.error, null);
@@ -21,6 +21,7 @@ describe('sound-manager', () => {
       id: uploadResult.id,
       createdAt: uploadResult.createdAt,
       originalName: uploadResult.originalName,
+      tts: uploadResult.tts,
       url: uploadResult.url,
     });
 
@@ -29,6 +30,7 @@ describe('sound-manager', () => {
       id: uploadResult.id,
       createdAt: uploadResult.createdAt,
       originalName: uploadResult.originalName,
+      tts: uploadResult.tts,
       url: uploadResult.url,
     });
 

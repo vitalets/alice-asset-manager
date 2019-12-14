@@ -1,5 +1,6 @@
 require('dotenv').config();
 const chai = require('chai');
+const sinon = require('sinon');
 const assertRejects = require('assert').rejects;
 const { ImageManager, SoundManager } = require('..');
 
@@ -18,6 +19,7 @@ const soundManager = new SoundManager({
 
 Object.assign(global, {
   assert: chai.assert,
+  sinon,
   imageManager,
   soundManager,
 });
@@ -27,6 +29,10 @@ beforeEach(async () => {
     deleteAllItems(imageManager),
     deleteAllItems(soundManager),
   ]);
+});
+
+afterEach(() => {
+  sinon.restore();
 });
 
 async function deleteAllItems(manager) {

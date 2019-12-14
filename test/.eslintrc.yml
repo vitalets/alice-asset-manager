@@ -3,6 +3,7 @@ env:
 
 globals:
   assert: false
+  sinon: false
   imageManager: false
   soundManager: false
 

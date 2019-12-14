@@ -3,6 +3,7 @@
  */
 const BaseManager = require('./base-manager');
 const SmartUploader = require('./smart-uploader');
+const { createViewServer } = require('./view-server');
 
 module.exports = class ImageManager extends BaseManager {
   /**
@@ -110,5 +111,14 @@ module.exports = class ImageManager extends BaseManager {
   async deleteUnused({ dbFile, dryRun}) {
     const uploader = new SmartUploader(this);
     return uploader.deleteUnused({ dbFile, dryRun });
+  }
+
+  /**
+   * Создать HTTP-сервер с навыком для просмотра изображений.
+   *
+   * @param {string} [dbFile] путь до файла с данными о загрузках, созданный методом uploadChanged()
+   */
+  createViewServer({ dbFile } = {}) {
+    return createViewServer(this, { dbFile });
   }
 };

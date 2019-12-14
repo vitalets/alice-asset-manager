@@ -500,6 +500,25 @@ soundManager.getUrl('c72463ae-01b5-48a1-a7f2-e657e4594166');
 */
 ```
 
+### .getTts()
+Получить tts для вставки звука в ответ навыка.
+
+Параметры:
+```js
+  /**
+   * @param {string} soundId
+   * @returns {string}
+   */
+```
+
+Пример:
+```js
+soundManager.getTts('c72463ae-01b5-48a1-a7f2-e657e4594166');
+/*
+'<speaker audio="dialogs-upload/SKILL_ID/c72463ae-01b5-48a1-a7f2-e657e4594166.opus">'
+*/
+```
+
 ### .delete()
 Удалить звук с сервера.
 

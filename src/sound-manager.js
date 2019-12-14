@@ -3,6 +3,7 @@
  */
 const BaseManager = require('./base-manager');
 const SmartUploader = require('./smart-uploader');
+const { createViewServer } = require('./view-server');
 
 module.exports = class SoundManager extends BaseManager {
   /**
@@ -37,6 +38,7 @@ module.exports = class SoundManager extends BaseManager {
     return result.sounds.map(sound => {
       return {
         ...sound,
+        tts: this.getTts(sound.id),
         url: this.getUrl(sound.id)
       };
     });
@@ -52,6 +54,7 @@ module.exports = class SoundManager extends BaseManager {
     const { sound } = await super.getItem(soundId);
     return {
       ...sound,
+      tts: this.getTts(sound.id),
       url: this.getUrl(sound.id)
     };
   }
@@ -66,6 +69,7 @@ module.exports = class SoundManager extends BaseManager {
     const { sound } = await super.upload(filePath);
     return {
       ...sound,
+      tts: this.getTts(sound.id),
       url: this.getUrl(sound.id)
     };
   }
@@ -88,6 +92,16 @@ module.exports = class SoundManager extends BaseManager {
    */
   getUrl(soundId) {
     return `https://yastatic.net/s3/dialogs/dialogs-upload/sounds/opus/${this._skillId}/${soundId}.opus`;
+  }
+
+  /**
+   * Получить tts для вставки звука в ответ навыка.
+   *
+   * @param {string} soundId
+   * @returns {string}
+   */
+  getTts(soundId) {
+    return `<speaker audio="dialogs-upload/${this._skillId}/${soundId}.opus">`;
   }
 
   /**
@@ -114,5 +128,14 @@ module.exports = class SoundManager extends BaseManager {
   async deleteUnused({ dbFile, dryRun}) {
     const uploader = new SmartUploader(this);
     return uploader.deleteUnused({ dbFile, dryRun });
+  }
+
+  /**
+   * Создать HTTP-сервер с навыком для просмотра изображений.
+   *
+   * @param {string} [dbFile] путь до файла с данными о загрузках, созданный методом uploadChanged()
+   */
+  createViewServer({ dbFile } = {}) {
+    return createViewServer(this, { dbFile });
   }
 };
