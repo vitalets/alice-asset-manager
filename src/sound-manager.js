@@ -131,7 +131,7 @@ module.exports = class SoundManager extends BaseManager {
   }
 
   /**
-   * Создать HTTP-сервер с навыком для просмотра изображений.
+   * Создать HTTP-сервер для прослушивания загруженных звуков через навык.
    *
    * @param {string} [dbFile] путь до файла с данными о загрузках, созданный методом uploadChanged()
    */

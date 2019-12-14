@@ -114,7 +114,7 @@ module.exports = class ImageManager extends BaseManager {
   }
 
   /**
-   * Создать HTTP-сервер с навыком для просмотра изображений.
+   * Создать HTTP-сервер для просмотра загруженных изображений прямо на устройстве.
    *
    * @param {string} [dbFile] путь до файла с данными о загрузках, созданный методом uploadChanged()
    */

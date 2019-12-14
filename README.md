@@ -25,6 +25,7 @@ Node.js API для загрузки изображений и звуков в н
   * [.delete()](#delete)
   * [.uploadChanged()](#uploadchanged)
   * [.deleteUnused()](#deleteunused)
+  * [.createViewServer()](#createviewserver)
 - [Звуки](#%D0%B7%D0%B2%D1%83%D0%BA%D0%B8)
   * [new SoundManager()](#new-soundmanager)
   * [.getQuota()](#getquota-1)
@@ -32,8 +33,11 @@ Node.js API для загрузки изображений и звуков в н
   * [.getItems()](#getitems-1)
   * [.getItem()](#getitem-1)
   * [.getUrl()](#geturl-1)
+  * [.getTts()](#gettts)
   * [.delete()](#delete-1)
   * [.uploadChanged()](#uploadchanged-1)
+  * [.deleteUnused()](#deleteunused-1)
+  * [.createViewServer()](#createviewserver-1)
 - [Лицензия](#%D0%BB%D0%B8%D1%86%D0%B5%D0%BD%D0%B7%D0%B8%D1%8F)
 
 <!-- tocstop -->
@@ -367,6 +371,35 @@ await imageManager.deleteUnused({
 }
 */
 ```
+### .createViewServer()
+Создать HTTP-сервер для просмотра загруженных изображений через навык.
+
+Параметры:
+```js
+  /**
+   * @param {string} [dbFile] путь до файла с данными о загрузках, созданный методом uploadChanged()
+   */
+```
+
+Создаваемый этим методом HTTP-сервер позволяет быстро посмотреть,
+как загруженные изображения будут выглядеть на экране смартфона.
+
+Пример:
+```js
+const server = imageManager.createViewServer();
+server.listen(3000);
+```
+Когда сервер запустился на `3000` порту, можно используя любой прокси-навык
+(например [alice-dev.vitalets.xyz](https://alice-dev.vitalets.xyz/)) проверить все изображения на смартфоне.
+Изображения в навыке отсортированы по дате загрузки, поэтому в первую очередь будут показаны недавно измененные файлы.
+
+Чтобы рядом с изображениями дополнительно выводилось имя файла и localId, нужно указать в параметрах `dbFile`:
+```js
+const server = imageManager.createViewServer({
+  dbFile: 'images.json'
+});
+server.listen(3000);
+```
 
 ## Звуки
 
@@ -562,6 +595,18 @@ await soundManager.delete('213044/aef2a365f198b4435611');
    */
 ```
 Все работает аналогично методу [.deleteUnused()](#deleteunused) для изображений.
+
+### .createViewServer()
+Создать HTTP-сервер для прослушивания загруженных звуков через навык.
+
+Параметры:
+```js
+  /**
+   * @param {string} [dbFile] путь до файла с данными о загрузках, созданный методом uploadChanged()
+   */
+```
+Все работает аналогично методу [.createViewServer()](#createviewserver) для изображений.
+
 
 ## Лицензия
 MIT @ [Vitaliy Potapov](https://github.com/vitalets)
