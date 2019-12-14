@@ -153,11 +153,13 @@ module.exports = class SmartUploader {
       ids: {},
       meta: {},
     };
-    this._localItems.forEach(({file, localId, mtimeMs, id}) => {
-      newDbFileData.ids[localId] = id;
-      const url = this._manager.getUrl(id);
-      newDbFileData.meta[localId] = { file, url, mtimeMs };
-    });
+    this._localItems
+      .sort((a, b) => a.localId.localeCompare(b.localId))
+      .forEach(({file, localId, mtimeMs, id}) => {
+        newDbFileData.ids[localId] = id;
+        const url = this._manager.getUrl(id);
+        newDbFileData.meta[localId] = { file, url, mtimeMs };
+      });
     fs.outputJsonSync(this._dbFile, newDbFileData, {spaces: 2});
   }
 
