@@ -42,13 +42,13 @@ describe('create-view-server', () => {
 
     await user.enter();
     assert.deepEqual(user.response, {
-      text: '~2 hours ago, 5Kb',
+      text: '2 hours ago, 5Kb',
       tts: 'sil <[100]>',
       card: {
         type: 'BigImage',
         image_id: 'IMAGE_ID_B',
         title: 'текст',
-        description: '~2 hours ago, 5Kb'
+        description: '2 hours ago, 5Kb'
       },
       buttons: [
         { title: 'Дальше', hide: true }
@@ -58,13 +58,13 @@ describe('create-view-server', () => {
 
     await user.say('Дальше');
     assert.deepEqual(user.response, {
-      text: '~1 day ago, 2Kb',
+      text: '1 day ago, 2Kb',
       tts: 'sil <[100]>',
       card: {
         type: 'BigImage',
         image_id: 'IMAGE_ID_A',
         title: 'текст',
-        description: '~1 day ago, 2Kb'
+        description: '1 day ago, 2Kb'
       },
       buttons: [
         { title: 'Дальше', hide: true }
@@ -117,13 +117,13 @@ describe('create-view-server', () => {
 
     await user.enter();
     assert.deepEqual(user.response, {
-      text: 'phone[b].png\n~2 hours ago, 5Kb',
+      text: 'phone[b].png\n2 hours ago, 5Kb',
       tts: 'sil <[100]>',
       card: {
         type: 'BigImage',
         image_id: 'IMAGE_ID_B',
         title: 'phone[b].png',
-        description: '~2 hours ago, 5Kb'
+        description: '2 hours ago, 5Kb'
       },
       buttons: [
         { title: 'Дальше', hide: true }
@@ -133,13 +133,13 @@ describe('create-view-server', () => {
 
     await user.say('Дальше');
     assert.deepEqual(user.response, {
-      text: 'alice[a].png\n~1 day ago, 2Kb',
+      text: 'alice[a].png\n1 day ago, 2Kb',
       tts: 'sil <[100]>',
       card: {
         type: 'BigImage',
         image_id: 'IMAGE_ID_A',
         title: 'alice[a].png',
-        description: '~1 day ago, 2Kb'
+        description: '1 day ago, 2Kb'
       },
       buttons: [
         { title: 'Дальше', hide: true }
@@ -207,7 +207,7 @@ describe('create-view-server', () => {
 
     await user.enter();
     assert.deepEqual(user.response, {
-      text: 'test[b].png\n~2 hours ago, 5Kb',
+      text: 'test[b].png\n2 hours ago, 5Kb',
       tts: soundManager.getTts('SOUND_ID_B'),
       buttons: [
         { title: 'Дальше', hide: true }
@@ -217,7 +217,7 @@ describe('create-view-server', () => {
 
     await user.say('Дальше');
     assert.deepEqual(user.response, {
-      text: 'test[a].png\n~1 day ago, 2Kb',
+      text: 'test[a].png\n1 day ago, 2Kb',
       tts: soundManager.getTts('SOUND_ID_A'),
       buttons: [
         { title: 'Дальше', hide: true }

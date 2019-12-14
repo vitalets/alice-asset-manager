@@ -116,7 +116,7 @@ class Responder {
     const sizeKb = Math.round(item.size / 1024);
     const createdDate = new Date(item.createdAt);
     const createdAgo = ms(Date.now() - createdDate.getTime(), { long: true });
-    return `~${createdAgo} ago, ${sizeKb}Kb`;
+    return `${createdAgo} ago, ${sizeKb}Kb`;
   }
 
   _calcNextIndex() {
