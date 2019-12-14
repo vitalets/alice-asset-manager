@@ -5,8 +5,7 @@ describe('sound-manager', () => {
     assert.hasAllKeys(await soundManager.getQuota(), ['total', 'used']);
   });
 
-  // todo: isProcessed возвращает false
-  it.skip('upload + getItems / getItem + delete', async () => {
+  it('upload + getItems / getItem + delete', async () => {
     assert.lengthOf(await soundManager.getItems(), 0);
 
     const uploadResult = await soundManager.upload('test/data/test.mp3');
