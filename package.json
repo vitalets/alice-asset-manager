@@ -1,7 +1,7 @@
 {
   "name": "alice-asset-manager",
   "version": "1.0.0",
-  "description": "A library for managing images and sounds in Alice skill",
+  "description": "Node.js API for managing images and sounds in Alice skill",
   "author": {
     "name": "Vitaliy Potapov",
     "email": "noginsk@rambler.ru"
