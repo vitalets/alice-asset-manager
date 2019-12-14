@@ -26,12 +26,14 @@ Node.js API для загрузки изображений и звуков в н
   * [.uploadChanged()](#uploadchanged)
   * [.deleteUnused()](#deleteunused)
 - [Звуки](#%D0%B7%D0%B2%D1%83%D0%BA%D0%B8)
-    + [Инициализация](#%D0%B8%D0%BD%D0%B8%D1%86%D0%B8%D0%B0%D0%BB%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F)
-    + [Данные о занятом месте](#%D0%B4%D0%B0%D0%BD%D0%BD%D1%8B%D0%B5-%D0%BE-%D0%B7%D0%B0%D0%BD%D1%8F%D1%82%D0%BE%D0%BC-%D0%BC%D0%B5%D1%81%D1%82%D0%B5)
-    + [Загрузить звук из файла](#%D0%B7%D0%B0%D0%B3%D1%80%D1%83%D0%B7%D0%B8%D1%82%D1%8C-%D0%B7%D0%B2%D1%83%D0%BA-%D0%B8%D0%B7-%D1%84%D0%B0%D0%B9%D0%BB%D0%B0)
-    + [Список всех звуков](#%D1%81%D0%BF%D0%B8%D1%81%D0%BE%D0%BA-%D0%B2%D1%81%D0%B5%D1%85-%D0%B7%D0%B2%D1%83%D0%BA%D0%BE%D0%B2)
-    + [Данные об отдельном звуке](#%D0%B4%D0%B0%D0%BD%D0%BD%D1%8B%D0%B5-%D0%BE%D0%B1-%D0%BE%D1%82%D0%B4%D0%B5%D0%BB%D1%8C%D0%BD%D0%BE%D0%BC-%D0%B7%D0%B2%D1%83%D0%BA%D0%B5)
-    + [Удалить звук](#%D1%83%D0%B4%D0%B0%D0%BB%D0%B8%D1%82%D1%8C-%D0%B7%D0%B2%D1%83%D0%BA)
+  * [new SoundManager()](#new-soundmanager)
+  * [.getQuota()](#getquota-1)
+  * [.upload()](#upload-1)
+  * [.getItems()](#getitems-1)
+  * [.getItem()](#getitem-1)
+  * [.getUrl()](#geturl-1)
+  * [.delete()](#delete-1)
+  * [.uploadChanged()](#uploadchanged-1)
 - [Лицензия](#%D0%BB%D0%B8%D1%86%D0%B5%D0%BD%D0%B7%D0%B8%D1%8F)
 
 <!-- tocstop -->
@@ -367,9 +369,20 @@ await imageManager.deleteUnused({
 ```
 
 ## Звуки
-[Официальная документация](https://yandex.ru/dev/dialogs/alice/doc/resource-sounds-upload-docpage/#http-load).
 
-#### Инициализация
+### new SoundManager()
+Создает инстанс менеджера звуков.
+
+Параметры:
+```js
+  /**
+   * @param {string} token OAuth-токен
+   * @param {string} skillId идентификатор навыка
+   */
+```
+Как получить `token` и `skillId` - описано в [документации](https://yandex.ru/dev/dialogs/alice/doc/resource-sounds-upload-docpage/#http-load).
+
+Пример:
 ```js
 const { SoundManager } = require('alice-asset-manager');
 
@@ -379,7 +392,8 @@ const soundManager = new SoundManager({
 });
 ```
 
-#### Данные о занятом месте
+### .getQuota()
+Получить данные о занятом месте.
 ```js
 await soundManager.getQuota();
 /*
@@ -390,7 +404,18 @@ await soundManager.getQuota();
 */
 ```
 
-#### Загрузить звук из файла
+### .upload()
+Загрузить звук из файла.
+
+Параметры:
+```js
+  /**
+   * @param {string} filePath путь до файла
+   * @returns {Promise}
+   */
+```
+
+Пример:
 ```js
 await soundManager.upload('images/test.mp3');
 /*
@@ -401,12 +426,14 @@ await soundManager.upload('images/test.mp3');
   originalName: 'test.mp3',
   createdAt: '2019-12-09T06:13:49.595Z',
   isProcessed: false,
-  error: null
+  error: null,
+  url: 'https://yastatic.net/s3/dialogs/dialogs-upload/sounds/opus/SKILL_ID/c72463ae-01b5-48a1-a7f2-e657e4594166.opus'
 }
 */
 ```
 
-#### Список всех звуков
+### .getItems()
+Получить список всех звуков на сервере.
 ```js
 await soundManager.getItems();
 /*
@@ -418,16 +445,28 @@ await soundManager.getItems();
     originalName: 'test.mp3',
     createdAt: '2019-12-09T06:19:48.317Z',
     isProcessed: true,
-    error: null
+    error: null,
+    url: 'https://yastatic.net/s3/dialogs/dialogs-upload/sounds/opus/SKILL_ID/c72463ae-01b5-48a1-a7f2-e657e4594166.opus'
   }
   ...
 ]
 */
 ```
 
-#### Данные об отдельном звуке
+### .getItem()
+Получить данные об отдельном звуке на сервере.
+
+Параметры:
 ```js
-await soundManager.getItem('213044/aef2a365f198b4435611');
+  /**
+   * @param {string} soundId
+   * @returns {Promise}
+   */
+```
+
+Пример:
+```js
+await soundManager.getItem('c72463ae-01b5-48a1-a7f2-e657e4594166');
 /*
 {
   id: 'c72463ae-01b5-48a1-a7f2-e657e4594166',
@@ -436,15 +475,74 @@ await soundManager.getItem('213044/aef2a365f198b4435611');
   originalName: 'test.mp3',
   createdAt: '2019-12-09T06:19:48.317Z',
   isProcessed: true,
-  error: null
+  error: null,
+  url: 'https://yastatic.net/s3/dialogs/dialogs-upload/sounds/opus/SKILL_ID/c72463ae-01b5-48a1-a7f2-e657e4594166.opus'
 }
 */
 ```
 
-#### Удалить звук
+### .getUrl()
+Получить ссылку на звук.
+
+Параметры:
+```js
+  /**
+   * @param {string} soundId
+   * @returns {string}
+   */
+```
+
+Пример:
+```js
+soundManager.getUrl('c72463ae-01b5-48a1-a7f2-e657e4594166');
+/*
+'https://yastatic.net/s3/dialogs/dialogs-upload/sounds/opus/SKILL_ID/c72463ae-01b5-48a1-a7f2-e657e4594166.opus'
+*/
+```
+
+### .delete()
+Удалить звук с сервера.
+
+Параметры:
+```js
+  /**
+   * @param {string} soundId
+   * @returns {Promise}
+   */
+```
+
+Пример:
 ```js
 await soundManager.delete('213044/aef2a365f198b4435611');
 ```
+
+### .uploadChanged()
+Загрузить новые и измененные звуки на сервер.
+
+Параметры:
+```js
+  /**
+   * @param {string} pattern путь/паттерн до папки со звуками
+   * @param {string} dbFile путь до файла с данными о загрузках
+   * @param {function} [getLocalId] функция вычисления localId по имени файла
+   * @param {boolean} [dryRun=false] запуск без зфактической загрузки файлов
+   * @returns {Promise}
+   */
+```
+Все работает аналогично методу [.uploadChanged()](#uploadchanged) для изображений.
+
+### .deleteUnused()
+Удалить неиспользуемые звуки с сервера.
+
+Параметры:
+```js
+  /**
+   * @param {string} dbFile путь до файла с данными о загрузках, созданный методом uploadChanged()
+   * @param {boolean} [dryRun=false] запуск без фактического удаления звуков
+   * @returns {Promise}
+   */
+```
+Все работает аналогично методу [.deleteUnused()](#deleteunused) для изображений.
 
 ## Лицензия
 MIT @ [Vitaliy Potapov](https://github.com/vitalets)

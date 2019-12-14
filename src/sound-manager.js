@@ -6,10 +6,10 @@ const SmartUploader = require('./smart-uploader');
 
 module.exports = class SoundManager extends BaseManager {
   /**
-   * Constructor.
+   * Создает инстанс менеджера звуков.
    *
-   * @param token
-   * @param skillId
+   * @param {string} token OAuth-токен
+   * @param {string} skillId идентификатор навыка
    */
   constructor({ token, skillId }) {
     const restUrl = `/skills/${skillId}/sounds`;
@@ -17,11 +17,21 @@ module.exports = class SoundManager extends BaseManager {
     this._skillId = skillId;
   }
 
+  /**
+   * Получить данные о занятом месте.
+   *
+   * @returns {Promise}
+   */
   async getQuota() {
     const { sounds } = await super.getQuota();
     return sounds.quota;
   }
 
+  /**
+   * Получить список всех звуков на сервере.
+   *
+   * @returns {Promise}
+   */
   async getItems() {
     const result = await super.getItems();
     return result.sounds.map(sound => {
@@ -32,6 +42,12 @@ module.exports = class SoundManager extends BaseManager {
     });
   }
 
+  /**
+   * Получить данные об отдельном звуке на сервере.
+   *
+   * @param {string} soundId
+   * @returns {Promise}
+   */
   async getItem(soundId) {
     const { sound } = await super.getItem(soundId);
     return {
@@ -40,6 +56,12 @@ module.exports = class SoundManager extends BaseManager {
     };
   }
 
+  /**
+   * Загрузить звук из файла.
+   *
+   * @param {string} filePath путь до файла
+   * @returns {Promise}
+   */
   async upload(filePath) {
     const { sound } = await super.upload(filePath);
     return {
@@ -48,26 +70,33 @@ module.exports = class SoundManager extends BaseManager {
     };
   }
 
+  /**
+   * Удалить звук с сервера.
+   *
+   * @param {string} soundId
+   * @returns {Promise}
+   */
   async delete(soundId) {
     await super.delete(soundId);
   }
 
   /**
-   * Returns url for sound.
+   * Получить ссылку на звук.
    *
    * @param {string} soundId
+   * @returns {string}
    */
   getUrl(soundId) {
     return `https://yastatic.net/s3/dialogs/dialogs-upload/sounds/opus/${this._skillId}/${soundId}.opus`;
   }
 
   /**
-   * Uploads changed items from directory and updates dbFile.
+   * Загрузить новые и измененные звуки на сервер.
    *
-   * @param {string} pattern
-   * @param {string} dbFile
-   * @param {function} getLocalId
-   * @param {boolean} [dryRun=false]
+   * @param {string} pattern путь/паттерн до папки со звуками
+   * @param {string} dbFile путь до файла с данными о загрузках
+   * @param {function} [getLocalId] функция вычисления localId по имени файла
+   * @param {boolean} [dryRun=false] запуск без фактической загрузки файлов
    * @returns {Promise}
    */
   async uploadChanged({pattern, dbFile, dryRun, getLocalId}) {
@@ -76,10 +105,10 @@ module.exports = class SoundManager extends BaseManager {
   }
 
   /**
-   * Delete items not found in dbFile (actually not used in skill).
+   * Удалить неиспользуемые звуки с сервера.
    *
-   * @param {string} dbFile
-   * @param {boolean} [dryRun=false]
+   * @param {string} dbFile путь до файла с данными о загрузках, созданный методом uploadChanged()
+   * @param {boolean} [dryRun=false] запуск без фактического удаления звуков
    * @returns {Promise}
    */
   async deleteUnused({ dbFile, dryRun}) {
