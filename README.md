@@ -43,7 +43,7 @@ npm i alice-asset-manager --save-dev
 
 ## Изображения
 
-#### new ImageManager()
+### new ImageManager()
 Создает инстанс менеджера изображений.
 
 Параметры:
@@ -65,7 +65,7 @@ const imageManager = new ImageManager({
 });
 ```
 
-#### .getQuota()
+### .getQuota()
 Получить данные о занятом месте.
 ```js
 await imageManager.getQuota();
@@ -77,7 +77,7 @@ await imageManager.getQuota();
 */
 ```
 
-#### .upload()
+### .upload()
 Загрузить изображение из файла.
 
 Параметры:
@@ -101,7 +101,7 @@ await imageManager.upload('images/test.jpg');
 */
 ```
 
-#### .getItems()
+### .getItems()
 Получить список всех изображений на сервере.
 ```js
 await imageManager.getItems();
@@ -119,7 +119,7 @@ await imageManager.getItems();
 */
 ```
 
-#### .getItem()
+### .getItem()
 Получить данные об отдельном изображении.
 
 Параметры:
@@ -144,7 +144,7 @@ await imageManager.getItem('213044/aef2a365f198b4435611');
 */
 ```
 
-#### .getUrl()
+### .getUrl()
 Получить ссылку на изображение.
 
 Параметры:
@@ -163,7 +163,7 @@ imageManager.getUrl('213044/aef2a365f198b4435611');
 */
 ```
 
-#### .delete()
+### .delete()
 Удалить изображение с сервера.
 
 Параметры:
@@ -179,7 +179,7 @@ imageManager.getUrl('213044/aef2a365f198b4435611');
 await imageManager.delete('213044/aef2a365f198b4435611');
 ```
 
-#### .uploadChanged()
+### .uploadChanged()
 Загрузить новые и измененные изображения на сервер.
 
 Параметры:
@@ -261,7 +261,8 @@ const images = require('./images.json').ids;
 response.card.image_id = images.alice;
 ```
 
-Если повторно вызвать `uploadChanged()`, то загрузок не произойдет, т.к. файлы не изменились:
+Если повторно вызвать `uploadChanged()` ничего не меняя, то загрузок не произойдет,
+т.к. файлы не изменились и уже загружены на сервер:
 ```js
 await imageManager.uploadChanged({
   pattern: 'images/*.png',
@@ -289,14 +290,15 @@ await imageManager.uploadChanged({
 }
 */
 ```
-Информация в `images.json` также обновится. А в коде навыка автоматически будет использоваться новый `image_id`:
+Информация в `images.json` также обновится - туда запишется новый `image_id` для `my_image_1[alice].png`.
+Использование в коде навыка останется прежним:
 ```js
 const images = require('./images.json').ids;
 // ...
 response.card.image_id = images.alice;
 ```
 
-#### .deleteUnused()
+### .deleteUnused()
 Удалить неиспользуемые изображения с сервера.
 
 Параметры:
@@ -309,9 +311,10 @@ response.card.image_id = images.alice;
 ```
 
 Работает только в связке с `.uploadChanged()`.
-При многократных вызовах `.uploadChanged()` на сервере накапливаются неиспользуемые файлы.
+При частых изменениях файлов и многократных вызовах `.uploadChanged()`
+на сервере накапливаются неиспользуемые изображения.
 Их нужно периодически удалять, чтобы освободить место.
-Метод `.deleteUnused()` сравнивает то, что записано в `dbFile` с тем что на сервере, и удаляет с сервера лишнее.
+Метод `.deleteUnused()` сравнивает то, что записано в `dbFile` с тем что лежит на сервере, и удаляет с сервера лишнее.
 
 **Пример:**
 
@@ -355,6 +358,12 @@ await imageManager.deleteUnused({
   dbFile: 'images.json',
   dryRun: true
 });
+/*
+{
+  deleted: [ '213044/aef2a365f198b4435611' ],
+  used: [ 'images/my_image_2[bob].png' ]
+}
+*/
 ```
 
 ## Звуки
