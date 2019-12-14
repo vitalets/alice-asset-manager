@@ -1,9 +1,12 @@
 const fs = require('fs-extra');
 const User = require('alice-tester');
 const getPort = require('get-port');
+const ms = require('ms');
 
 describe('create-view-server', () => {
 
+  // Смещает дату на заданное значение и возвращает в формате ISO
+  const getCreatedAt = str => new Date(Date.now() + ms(str)).toISOString();
   let server;
 
   beforeEach(() => {
@@ -22,13 +25,13 @@ describe('create-view-server', () => {
         id: 'IMAGE_ID_A',
         origUrl: null,
         size: 2000,
-        createdAt: '2019-12-09T06:04:35.035Z',
+        createdAt: getCreatedAt('-1d'),
       },
       {
         id: 'IMAGE_ID_B',
         origUrl: null,
         size: 5000,
-        createdAt: '2019-12-09T06:05:35.035Z',
+        createdAt: getCreatedAt('-2h'),
       }
     ]);
 
@@ -44,7 +47,7 @@ describe('create-view-server', () => {
         type: 'BigImage',
         image_id: 'IMAGE_ID_B',
         title: '',
-        description: '(~3 минуты назад, 5Kb)'
+        description: '(~2 hours ago, 5Kb)'
       },
       buttons: [
         { title: 'Дальше' }
@@ -59,7 +62,7 @@ describe('create-view-server', () => {
         type: 'BigImage',
         image_id: 'IMAGE_ID_A',
         title: '',
-        description: '(~3 минуты назад, 2Kb)'
+        description: '(~1 day ago, 2Kb)'
       },
       buttons: [
         { title: 'Дальше' }
@@ -77,13 +80,13 @@ describe('create-view-server', () => {
         id: 'IMAGE_ID_A',
         origUrl: null,
         size: 2000,
-        createdAt: '2019-12-09T06:05:34.035Z',
+        createdAt: getCreatedAt('-1d'),
       },
       {
         id: 'IMAGE_ID_B',
         origUrl: null,
         size: 5000,
-        createdAt: '2019-12-09T06:05:35.035Z',
+        createdAt: getCreatedAt('-2h'),
       }
     ]);
 
@@ -117,7 +120,7 @@ describe('create-view-server', () => {
         type: 'BigImage',
         image_id: 'IMAGE_ID_B',
         title: 'b',
-        description: 'phone[b].png (~3 минуты назад, 5Kb)'
+        description: 'phone[b].png (~2 hours ago, 5Kb)'
       },
       buttons: [
         { title: 'Дальше' }
@@ -132,7 +135,7 @@ describe('create-view-server', () => {
         type: 'BigImage',
         image_id: 'IMAGE_ID_A',
         title: 'a',
-        description: 'alice[a].png (~3 минуты назад, 2Kb)'
+        description: 'alice[a].png (~1 day ago, 2Kb)'
       },
       buttons: [
         { title: 'Дальше' }
@@ -161,7 +164,7 @@ describe('create-view-server', () => {
         skillId: 'SKILL_ID',
         size: 2000,
         originalName: 'test[a].mp3',
-        createdAt: '2019-11-09T06:19:48.317Z',
+        createdAt: getCreatedAt('-1d'),
         tts: soundManager.getTts('SOUND_ID_A'),
       },
       {
@@ -169,7 +172,7 @@ describe('create-view-server', () => {
         skillId: 'SKILL_ID',
         size: 5000,
         originalName: 'test[b].mp3',
-        createdAt: '2019-12-09T06:19:48.317Z',
+        createdAt: getCreatedAt('-2h'),
         tts: soundManager.getTts('SOUND_ID_B'),
       },
     ]);
@@ -199,7 +202,7 @@ describe('create-view-server', () => {
 
     await user.enter();
     assert.deepEqual(user.response, {
-      text: 'b\ntest[b].png (~3 минуты назад, 5Kb)',
+      text: 'b\ntest[b].png (~2 hours ago, 5Kb)',
       tts: soundManager.getTts('SOUND_ID_B'),
       buttons: [
         { title: 'Дальше' }
@@ -209,7 +212,7 @@ describe('create-view-server', () => {
 
     await user.say('Дальше');
     assert.deepEqual(user.response, {
-      text: 'a\ntest[a].png (~3 минуты назад, 2Kb)',
+      text: 'a\ntest[a].png (~1 day ago, 2Kb)',
       tts: soundManager.getTts('SOUND_ID_A'),
       buttons: [
         { title: 'Дальше' }

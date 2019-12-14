@@ -5,6 +5,7 @@ const fs = require('fs-extra');
 const path = require('path');
 const {promisify} = require('util');
 const micro = require('micro');
+const ms = require('ms');
 
 /**
  *
@@ -106,9 +107,10 @@ class Responder {
 
   _getFileInfo(item) {
     const sizeKb = Math.round(item.size / 1024);
-    const createdAgo = '3 минуты назад';
+    const createdDate = new Date(item.createdAt);
+    const createdAgo = ms(Date.now() - createdDate.getTime(), { long: true });
     const originalName = item.originalName || '';
-    return `${originalName} (~${createdAgo}, ${sizeKb}Kb)`.trim();
+    return `${originalName} (~${createdAgo} ago, ${sizeKb}Kb)`.trim();
   }
 
   _calcNextIndex() {
