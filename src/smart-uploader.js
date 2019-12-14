@@ -148,18 +148,23 @@ module.exports = class SmartUploader {
   }
 
   _saveDbFile() {
+    const newDbFileData = {};
+    // сортируем по localId, чтобы удобнее было смотреть в dbFile
+    this._localItems.sort((a, b) => a.localId.localeCompare(b.localId));
     // записываем id-шники в отдельное свойство ids для удобного доступа
-    const newDbFileData = {
-      ids: {},
-      meta: {},
-    };
-    this._localItems
-      .sort((a, b) => a.localId.localeCompare(b.localId))
-      .forEach(({file, localId, mtimeMs, id}) => {
-        newDbFileData.ids[localId] = id;
-        const url = this._manager.getUrl(id);
-        newDbFileData.meta[localId] = { file, url, mtimeMs };
-      });
+    newDbFileData.ids = {};
+    this._localItems.forEach(({localId, id}) => newDbFileData.ids[localId] = id);
+    // для звуков записываем еще поле tts, так  удобнее использовать их в коде навыка
+    if (this._manager.getTts) {
+      newDbFileData.tts = {};
+      this._localItems.forEach(({localId, id}) => newDbFileData.tts[localId] = this._manager.getTts(id));
+    }
+    // имя файла и дату моюицикации пишем в поле meta
+    newDbFileData.meta = {};
+    this._localItems.forEach(({file, localId, mtimeMs, id}) => {
+      const url = this._manager.getUrl(id);
+      newDbFileData.meta[localId] = { file, url, mtimeMs };
+    });
     fs.outputJsonSync(this._dbFile, newDbFileData, {spaces: 2});
   }
 

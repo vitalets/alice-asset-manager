@@ -6,7 +6,7 @@ describe('upload-changed', () => {
     fs.emptyDirSync('temp');
   });
 
-  it('dryRun', async () => {
+  it('initial upload images (dryRun)', async () => {
     fs.copySync('test/data/alice.png', 'temp/alice[a].png');
     fs.copySync('test/data/phone.png', 'temp/phone[b].png');
 
@@ -26,7 +26,7 @@ describe('upload-changed', () => {
     });
   });
 
-  it('upload + create dbFile', async () => {
+  it('initial upload images', async () => {
     fs.copySync('test/data/alice.png', 'temp/alice[a].png');
     fs.copySync('test/data/phone.png', 'temp/phone[b].png');
 
@@ -35,7 +35,8 @@ describe('upload-changed', () => {
       dbFile: 'temp/images.json',
     });
 
-    const remoteItems = (await imageManager.getItems()).sort((a, b) => a.size - b.size);
+    const remoteItems = await imageManager.getItems();
+    remoteItems.sort((a, b) => a.size - b.size);
     assert.lengthOf(remoteItems, 2);
     assert.deepEqual(result, {
       uploaded: [ 'temp/alice[a].png', 'temp/phone[b].png' ],
@@ -70,7 +71,8 @@ describe('upload-changed', () => {
       dbFile: 'temp/images.json',
     });
 
-    const remoteItems2 = (await imageManager.getItems()).sort((a, b) => a.size - b.size);
+    const remoteItems2 = await imageManager.getItems();
+    remoteItems2.sort((a, b) => a.size - b.size);
     assert.deepEqual(remoteItems2, remoteItems);
     assert.deepEqual(result2, {
       uploaded: [],
@@ -80,7 +82,7 @@ describe('upload-changed', () => {
     assert.deepEqual(fs.readJsonSync('temp/images.json'), dbFileData);
   });
 
-  it('upload changes: new file, mtime changed, removed from server', async () => {
+  it('upload changed images: new file, mtime changed, removed from server', async () => {
     fs.copySync('test/data/alice.png', 'temp/alice[a].png');
     fs.copySync('test/data/phone.png', 'temp/phone[b].png');
 
@@ -142,6 +144,64 @@ describe('upload-changed', () => {
         },
       }
     });
+  });
+
+  it('initial upload sounds', async () => {
+    fs.copySync('test/data/alice.mp3', 'temp/alice[a].mp3');
+    fs.copySync('test/data/phone.mp3', 'temp/phone[b].mp3');
+
+    const result = await soundManager.uploadChanged({
+      pattern: 'temp/*.mp3',
+      dbFile: 'temp/sounds.json',
+    });
+
+    const remoteItems = await soundManager.getItems();
+    // сортируем по originalName т.к. size=null пока не закончится обработка
+    remoteItems.sort((a, b) => a.originalName.localeCompare(b.originalName));
+    assert.lengthOf(remoteItems, 2);
+    assert.deepEqual(result, {
+      uploaded: [ 'temp/alice[a].mp3', 'temp/phone[b].mp3' ],
+      skipped: [],
+    });
+
+    const dbFileData = fs.readJsonSync('temp/sounds.json');
+    assert.deepEqual(dbFileData, {
+      ids: {
+        a: remoteItems[0].id,
+        b: remoteItems[1].id,
+      },
+      tts: {
+        a: soundManager.getTts(remoteItems[0].id),
+        b: soundManager.getTts(remoteItems[1].id),
+      },
+      meta: {
+        a: {
+          file: 'temp/alice[a].mp3',
+          url: soundManager.getUrl(remoteItems[0].id),
+          mtimeMs: fs.statSync('temp/alice[a].mp3').mtimeMs,
+        },
+        b: {
+          file: 'temp/phone[b].mp3',
+          url: soundManager.getUrl(remoteItems[1].id),
+          mtimeMs: fs.statSync('temp/phone[b].mp3').mtimeMs,
+        },
+      }
+    });
+
+    // вызываем uploadChanged еще раз с теми же параметрами - ничего загрузиться не должн
+    const result2 = await soundManager.uploadChanged({
+      pattern: 'temp/*.mp3',
+      dbFile: 'temp/sounds.json',
+    });
+
+    const remoteItems2 = await soundManager.getItems();
+    remoteItems2.sort((a, b) => a.originalName.localeCompare(b.originalName));
+    assert.deepEqual(remoteItems2, remoteItems);
+    assert.deepEqual(result2, {
+      uploaded: [],
+      skipped: [ 'temp/alice[a].mp3', 'temp/phone[b].mp3'],
+    });
+    assert.deepEqual(fs.readJsonSync('temp/sounds.json'), dbFileData);
   });
 
   it('duplicated localId', async () => {

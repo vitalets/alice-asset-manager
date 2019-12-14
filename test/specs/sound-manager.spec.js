@@ -8,7 +8,7 @@ describe('sound-manager', () => {
   it('upload + getItems / getItem + delete', async () => {
     assert.lengthOf(await soundManager.getItems(), 0);
 
-    const uploadResult = await soundManager.upload('test/data/test.mp3');
+    const uploadResult = await soundManager.upload('test/data/alice.mp3');
     assert.containsAllKeys(uploadResult, ['id', 'originalName', 'createdAt', 'tts', 'url']);
     assert.equal(uploadResult.isProcessed, false);
     assert.equal(uploadResult.size, null);
