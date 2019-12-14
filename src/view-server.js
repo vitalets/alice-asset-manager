@@ -23,13 +23,15 @@ exports.createViewServer = (manager, {dbFile}) => {
       return {response, session, version};
     }
   });
+  const isSoundManager = Boolean(manager.getTts);
   server.on('listening', async () => {
     console.log([
-      `Server started on port ${server.address().port}.`,
-      `Use https://alice-dev.vitalets.xyz to view assets on real device.`
+      `Сервер запущен на порту ${server.address().port}.`,
+      `Используйте https://alice-dev.vitalets.xyz чтобы протестировать`,
+      `${isSoundManager ? 'звуки' : 'изображения'} на реальном устройстве.`
     ].join(' '));
     const items = await manager.getItems();
-    console.log(`Loaded items: ${items.length}`);
+    console.log(`Загружено ${isSoundManager ? 'звуков' : 'изображений'}: ${items.length}`);
     responder.setItems({items, dbFile});
   });
   server.listen = promisify(server.listen);
