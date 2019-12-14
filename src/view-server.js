@@ -104,14 +104,17 @@ class Responder {
   }
 
   _attachDataFromDbFile(dbFile) {
-    if (dbFile) {
-      const {ids, meta} = fs.readJsonSync(dbFile);
-      const localIds = Object.keys(meta);
-      this._items.forEach(item => {
-        item.localId = localIds.find(localId => ids[localId] === item.id);
-        item.originalName = path.basename(meta[item.localId].file);
-      });
+    if (!dbFile) {
+      return;
     }
+    const {ids, meta} = fs.readJsonSync(dbFile);
+    const localIds = Object.keys(ids);
+    this._items.forEach(item => {
+      const localId = localIds.find(localId => ids[localId] === item.id);
+      if (meta[localId]) {
+        item.originalName = path.basename(meta[localId].file);
+      }
+    });
   }
 
   _getFileInfo(item) {

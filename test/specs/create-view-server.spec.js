@@ -89,6 +89,12 @@ describe('create-view-server', () => {
         origUrl: null,
         size: 5000,
         createdAt: getCreatedAt('-2h'),
+      },
+      {
+        id: 'IMAGE_ID_NOT_IN_DB_FILE',
+        origUrl: null,
+        size: 7000,
+        createdAt: getCreatedAt('-2d'),
       }
     ]);
 
