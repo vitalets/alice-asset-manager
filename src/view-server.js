@@ -24,7 +24,12 @@ exports.createViewServer = (manager, {dbFile}) => {
     }
   });
   server.on('listening', async () => {
+    console.log([
+      `Server started on port ${server.address().port}.`,
+      `Use https://alice-dev.vitalets.xyz to view assets on real device.`
+    ].join(' '));
     const items = await manager.getItems();
+    console.log(`Loaded items: ${items.length}`);
     responder.setItems({items, dbFile});
   });
   server.listen = promisify(server.listen);
@@ -60,7 +65,7 @@ class Responder {
     return {
       ...response,
       buttons: [
-        {title: 'Дальше'}
+        {title: 'Дальше', hide: true}
       ],
       end_session: false,
     };
@@ -68,23 +73,25 @@ class Responder {
 
   _getNoItemsResponse() {
     return {
-      text: 'Не ресурсов на сервере.',
+      text: 'Нет ресурсов на сервере.',
+      tts: 'sil <[100]>',
       end_session: false,
     };
   }
 
-  _getSoundResponse({localId, fileInfo, error, tts}) {
-    const text = [ error, localId, fileInfo ].filter(Boolean).join('\n');
+  _getSoundResponse({originalName, fileInfo, error, tts}) {
+    const text = [ originalName, fileInfo, error ].filter(Boolean).join('\n');
     return { text, tts };
   }
 
-  _getImageResponse({localId, fileInfo, id}) {
+  _getImageResponse({originalName, fileInfo, id}) {
     return {
-      text: '',
+      text: [originalName, fileInfo].filter(Boolean).join('\n'),
+      tts: 'sil <[100]>',
       card: {
         type: 'BigImage',
         image_id: id,
-        title: localId || '',
+        title: originalName || 'текст',
         description: fileInfo
       },
     };
@@ -109,8 +116,7 @@ class Responder {
     const sizeKb = Math.round(item.size / 1024);
     const createdDate = new Date(item.createdAt);
     const createdAgo = ms(Date.now() - createdDate.getTime(), { long: true });
-    const originalName = item.originalName || '';
-    return `${originalName} (~${createdAgo} ago, ${sizeKb}Kb)`.trim();
+    return `~${createdAgo} ago, ${sizeKb}Kb`;
   }
 
   _calcNextIndex() {

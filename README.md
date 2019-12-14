@@ -400,6 +400,11 @@ const server = imageManager.createViewServer({
 });
 server.listen(3000);
 ```
+Чтобы сервер автоматически перезапускался при изменениях `images.json`
+можно использовать [nodemon](https://github.com/remy/nodemon):
+```bash
+nodemon ./image-server.js --watch ./images.json
+```
 
 ## Звуки
 
