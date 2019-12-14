@@ -1,7 +1,7 @@
 # alice-asset-manager
 
-[![npm](https://img.shields.io/npm/v/alice-tester.svg)](https://www.npmjs.com/package/alice-tester)
-[![license](https://img.shields.io/npm/l/alice-tester.svg)](https://www.npmjs.com/package/alice-tester)
+[![npm](https://img.shields.io/npm/v/alice-asset-manager.svg)](https://www.npmjs.com/package/alice-asset-manager)
+[![license](https://img.shields.io/npm/l/alice-asset-manager.svg)](https://www.npmjs.com/package/alice-asset-manager)
 
 Node.js API для загрузки изображений и звуков в навык Алисы.
 
