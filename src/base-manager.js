@@ -12,14 +12,20 @@ module.exports = class BaseManager {
   /**
    * Constructor.
    *
-   * @param token
-   * @param restUrl
-   * @param timeout
+   * @param {string} token
+   * @param {string} skillId
+   * @param {string} restUrl
+   * @param {number} [timeout]
    */
-  constructor({ token, restUrl, timeout }) {
+  constructor({ token, skillId, restUrl, timeout }) {
     this._token = token;
+    this._skillId = skillId;
     this._restUrl = restUrl;
     this._timeout = timeout || REQUEST_TIMEOUT;
+  }
+
+  get skillId() {
+    return this._skillId;
   }
 
   async getQuota() {

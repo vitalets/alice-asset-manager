@@ -3,6 +3,11 @@ describe('image-manager', () => {
     assert.hasAllKeys(await imageManager.getQuota(), ['total', 'used']);
   });
 
+  it('getUrl', async () => {
+    const url = imageManager.getUrl('123456/foo');
+    assert.equal(url, `https://avatars.mds.yandex.net/get-dialogs-skill-card/123456/foo/orig`);
+  });
+
   it('upload + getItems / getItem + delete', async () => {
     assert.lengthOf(await imageManager.getItems(), 0);
 

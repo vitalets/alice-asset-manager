@@ -5,6 +5,16 @@ describe('sound-manager', () => {
     assert.hasAllKeys(await soundManager.getQuota(), ['total', 'used']);
   });
 
+  it('getUrl', async () => {
+    const url = soundManager.getUrl('123');
+    assert.equal(url, `https://yastatic.net/s3/dialogs/dialogs-upload/sounds/opus/${soundManager.skillId}/123.opus`);
+  });
+
+  it('getTts', async () => {
+    const tts = soundManager.getTts('123');
+    assert.equal(tts, `<speaker audio="dialogs-upload/${soundManager.skillId}/123.opus">`);
+  });
+
   it('upload + getItems / getItem + delete', async () => {
     assert.lengthOf(await soundManager.getItems(), 0);
 

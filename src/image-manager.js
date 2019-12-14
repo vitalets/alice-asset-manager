@@ -14,7 +14,7 @@ module.exports = class ImageManager extends BaseManager {
    */
   constructor({ token, skillId }) {
     const restUrl = `/skills/${skillId}/images`;
-    super({ token, restUrl });
+    super({ token, skillId, restUrl });
   }
 
   /**

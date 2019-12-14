@@ -14,8 +14,7 @@ module.exports = class SoundManager extends BaseManager {
    */
   constructor({ token, skillId }) {
     const restUrl = `/skills/${skillId}/sounds`;
-    super({ token, restUrl });
-    this._skillId = skillId;
+    super({ token, skillId, restUrl });
   }
 
   /**
