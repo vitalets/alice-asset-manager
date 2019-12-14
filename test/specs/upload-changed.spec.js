@@ -171,7 +171,7 @@ describe('upload-changed', () => {
     });
 
     await assert.rejects(promise, e => {
-      assert.include(e.message, 'getLocalId() вернула "null" для файла: temp/alice1.png');
+      assert.include(e.message, 'Пустой localId "null" для файла: temp/alice1.png');
       return true;
     });
   });
@@ -185,7 +185,7 @@ describe('upload-changed', () => {
     });
 
     await assert.rejects(promise, e => {
-      assert.include(e.message, 'getLocalId() вернула "null" для файла: temp/alice[].png');
+      assert.include(e.message, 'Пустой localId "null" для файла: temp/alice[].png');
       return true;
     });
   });
@@ -199,7 +199,7 @@ describe('upload-changed', () => {
     });
 
     await assert.rejects(promise, e => {
-      assert.include(e.message, 'getLocalId() вернула "" для файла: temp/alice[ ].png');
+      assert.include(e.message, 'Пустой localId "" для файла: temp/alice[ ].png');
       return true;
     });
   });

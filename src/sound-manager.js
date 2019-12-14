@@ -50,7 +50,6 @@ module.exports = class SoundManager extends BaseManager {
 
   async delete(soundId) {
     await super.delete(soundId);
-    return this.getUrl(soundId);
   }
 
   /**

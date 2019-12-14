@@ -65,7 +65,7 @@ module.exports = class SmartUploader {
     }
     const {ids, meta} = this._dbFileData;
     return {
-      deleted: unusedRemoteIds.map(id => this._manager.getUrl(id)),
+      deleted: unusedRemoteIds,
       used: Object.keys(ids)
         .filter(localId => !unusedRemoteIds.includes(ids[localId]))
         .map(localId => meta[localId].file)
@@ -172,7 +172,8 @@ module.exports = class SmartUploader {
   }
 
   _assertLocalId(localId, file) {
-    throwIf(!localId || typeof localId !== 'string',  `getLocalId() вернула "${localId}" для файла: ${file}`);
+    throwIf(!localId,  `Пустой localId "${localId}" для файла: ${file}`);
+    throwIf(typeof localId !== 'string',  `Некорректный localId "${localId}" для файла: ${file}`);
   }
 };
 

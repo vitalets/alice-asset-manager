@@ -17,6 +17,7 @@
   "scripts": {
     "lint": "eslint src test",
     "test": "mocha test/setup.js test/specs/*.js --timeout=6000",
+    "test:d": "npm run test -- --bail",
     "toc": "markdown-toc README.md -i",
     "prerelease": "npm run lint && npm test",
     "release": "npm version $VER && npm publish",
