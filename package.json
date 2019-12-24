@@ -23,9 +23,7 @@
     "test": "mocha test/setup.js test/specs/*.js --timeout=6000",
     "test:d": "npm run test -- --bail",
     "toc": "markdown-toc README.md -i",
-    "prerelease": "npm run lint && npm test",
-    "release": "npm version $VER && npm publish",
-    "postrelease": "git push --follow-tags --no-verify",
+    "release": "npm run lint && npm test && npm version $VER && npm publish && git push --follow-tags --no-verify",
     "release-patch": "VER=patch npm run release",
     "release-minor": "VER=minor npm run release"
   },
