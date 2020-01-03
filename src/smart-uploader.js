@@ -35,17 +35,14 @@ module.exports = class SmartUploader {
     this._dbFileData = null;
   }
 
-  async uploadChanged({pattern, dbFile, getLocalId, transform, dryRun}) {
+  async uploadChanged({ pattern, dbFile, getLocalId, transform, dryRun }) {
     const files = this._getFiles(pattern);
     this._createLocalItems(files, getLocalId);
     this._readDbFile(dbFile);
     await this._loadRemoteItems();
     this._markLocalItemsForUpload();
-    if (!dryRun) {
-      transform = transform || defaults.transform;
-      await this._upload(transform);
-      this._saveDbFile();
-    }
+    await this._upload({ transform, dryRun });
+    this._saveDbFile({ dryRun });
     return this._localItems;
   }
 
@@ -111,13 +108,16 @@ module.exports = class SmartUploader {
     this._remoteItems = await this._manager.getItems();
   }
 
-  async _upload(transform) {
+  async _upload({ transform, dryRun }) {
+    transform = transform || defaults.transform;
     const localItemToUpload = this._localItems.filter(localItem => localItem.upload);
     for (const localItem of localItemToUpload) {
       const buffer = await fs.readFile(localItem.file);
       const transformedBuffer = await transform(buffer, localItem.file);
-      const { id } = await this._manager.uploadBuffer(transformedBuffer, localItem.file);
-      localItem.id = id;
+      if (!dryRun) {
+        const {id} = await this._manager.uploadBuffer(transformedBuffer, localItem.file);
+        localItem.id = id;
+      }
     }
   }
 
@@ -152,25 +152,34 @@ module.exports = class SmartUploader {
     }
   }
 
-  _saveDbFile() {
+  _saveDbFile({ dryRun }) {
+    const newDbFileData = this._buildDbFileData();
+    if (!dryRun) {
+      fs.outputJsonSync(this._dbFile, newDbFileData, {spaces: 2});
+    }
+  }
+
+  _buildDbFileData() {
     const newDbFileData = {};
+
     // сортируем по localId, чтобы удобнее было смотреть в dbFile
     this._localItems.sort((a, b) => a.localId.localeCompare(b.localId));
+
     // записываем id-шники в отдельное свойство ids для удобного доступа
     newDbFileData.ids = {};
     this._localItems.forEach(({localId, id}) => newDbFileData.ids[localId] = id);
-    // для звуков записываем еще поле tts, так  удобнее использовать их в коде навыка
+    // для звуков записываем еще поле tts, так удобнее использовать их в коде навыка
     if (this._manager.getTts) {
       newDbFileData.tts = {};
       this._localItems.forEach(({localId, id}) => newDbFileData.tts[localId] = this._manager.getTts(id));
     }
-    // имя файла и дату моюицикации пишем в поле meta
+
+    // имя файла и дату модификации пишем в поле meta
     newDbFileData.meta = {};
     this._localItems.forEach(({file, localId, mtimeMs, id}) => {
       const url = this._manager.getUrl(id);
       newDbFileData.meta[localId] = { file, url, mtimeMs };
     });
-    fs.outputJsonSync(this._dbFile, newDbFileData, {spaces: 2});
   }
 
   _assertLocalIdDuplicates() {
