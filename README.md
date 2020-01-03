@@ -230,10 +230,8 @@ await imageManager.uploadChanged({
   dbFile: 'images.json',   // путь до файла с данными о загрузках (изначально файла нет)
 });
 /*
-{
-  uploaded: [ 'images/my_image_1[alice].png', 'images/my_image_2[bob].png' ],
-  skipped: []
-}
+uploaded: 'images/my_image_1[alice].png', 'images/my_image_2[bob].png'
+skipped: 0
 */
 ```
 
@@ -261,7 +259,7 @@ await imageManager.uploadChanged({
 
 Файл `images.json` удобно использовать в коде вашего навыка, вставляя изображения по их `localId`.
 Главный плюс в том, что при изменении изображения и получении нового `image_id` на сервере,
-в коде навыка ничего менять не нужно - новый `image_id` подтянется автоматически:
+в коде навыка ничего менять не нужно - новый `image_id` подтянется по `localId` автоматически:
 ```js
 const images = require('./images.json').ids;
 // ...
@@ -276,10 +274,8 @@ await imageManager.uploadChanged({
   dbFile: 'images.json',
 });
 /*
-{
-  uploaded: [],
-  skipped: [ 'images/my_image_1[alice].png', 'images/my_image_2[bob].png' ]
-}
+uploaded: 0
+skipped: 'images/my_image_1[alice].png', 'images/my_image_2[bob].png'
 */
 ```
 
@@ -291,10 +287,8 @@ await imageManager.uploadChanged({
   dbFile: 'images.json',
 });
 /*
-{
-  uploaded: [ 'images/my_image_1[alice].png' ],
-  skipped: [ 'images/my_image_2[bob].png' ]
-}
+uploaded: 'images/my_image_1[alice].png'
+skipped: 'images/my_image_2[bob].png'
 */
 ```
 Информация в `images.json` также обновится - туда запишется новый `image_id` для `my_image_1[alice].png`.

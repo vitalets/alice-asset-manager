@@ -17,13 +17,20 @@ describe('upload-changed', () => {
     });
 
     assert.lengthOf(await imageManager.getItems(), 0);
-    assert.deepEqual(result, {
-      uploaded: [
-        'temp/alice[a].png',
-        'temp/phone[b].png'
-      ],
-      skipped: [],
-    });
+    assert.deepEqual(result, [
+      {
+        file: 'temp/alice[a].png',
+        localId: 'a',
+        mtimeMs: fs.statSync('temp/alice[a].png').mtimeMs,
+        upload: 'new'
+      },
+      {
+        file: 'temp/phone[b].png',
+        localId: 'b',
+        mtimeMs: fs.statSync('temp/phone[b].png').mtimeMs,
+        upload: 'new'
+      }
+    ]);
   });
 
   it('initial upload images', async () => {
@@ -38,10 +45,22 @@ describe('upload-changed', () => {
     const remoteItems = await imageManager.getItems();
     remoteItems.sort((a, b) => a.size - b.size);
     assert.lengthOf(remoteItems, 2);
-    assert.deepEqual(result, {
-      uploaded: [ 'temp/alice[a].png', 'temp/phone[b].png' ],
-      skipped: [],
-    });
+    assert.deepEqual(result, [
+      {
+        file: 'temp/alice[a].png',
+        localId: 'a',
+        mtimeMs: fs.statSync('temp/alice[a].png').mtimeMs,
+        upload: 'new',
+        id: remoteItems[0].id,
+      },
+      {
+        file: 'temp/phone[b].png',
+        localId: 'b',
+        mtimeMs: fs.statSync('temp/phone[b].png').mtimeMs,
+        upload: 'new',
+        id: remoteItems[1].id,
+      }
+    ]);
 
     const dbFileData = fs.readJsonSync('temp/images.json');
     assert.deepEqual(dbFileData, {
@@ -74,10 +93,20 @@ describe('upload-changed', () => {
     const remoteItems2 = await imageManager.getItems();
     remoteItems2.sort((a, b) => a.size - b.size);
     assert.deepEqual(remoteItems2, remoteItems);
-    assert.deepEqual(result2, {
-      uploaded: [],
-      skipped: [ 'temp/alice-[a].png', 'temp/phone[b].png'],
-    });
+    assert.deepEqual(result2, [
+      {
+        file: 'temp/alice-[a].png',
+        localId: 'a',
+        mtimeMs: fs.statSync('temp/alice-[a].png').mtimeMs,
+        id: remoteItems[0].id,
+      },
+      {
+        file: 'temp/phone[b].png',
+        localId: 'b',
+        mtimeMs: fs.statSync('temp/phone[b].png').mtimeMs,
+        id: remoteItems[1].id,
+      }
+    ]);
     dbFileData.meta.a.file = 'temp/alice-[a].png';
     assert.deepEqual(fs.readJsonSync('temp/images.json'), dbFileData);
   });
@@ -110,12 +139,31 @@ describe('upload-changed', () => {
       dbFile: 'temp/images.json',
     });
 
-    assert.deepEqual(result2, {
-      uploaded: [ 'temp/alice[a].png', 'temp/phone[b].png', 'temp/tools[c].png' ],
-      skipped: []
-    });
     const remoteItems = (await imageManager.getItems()).sort((a, b) => a.size - b.size);
     assert.lengthOf(await imageManager.getItems(), 4);
+    assert.deepEqual(result2, [
+      {
+        file: 'temp/alice[a].png',
+        localId: 'a',
+        mtimeMs: fs.statSync('temp/alice[a].png').mtimeMs,
+        upload: 'deleted_on_server',
+        id: remoteItems[0].id,
+      },
+      {
+        file: 'temp/phone[b].png',
+        localId: 'b',
+        mtimeMs: fs.statSync('temp/phone[b].png').mtimeMs,
+        upload: 'changed',
+        id: remoteItems[1].id,
+      },
+      {
+        file: 'temp/tools[c].png',
+        localId: 'c',
+        mtimeMs: fs.statSync('temp/tools[c].png').mtimeMs,
+        upload: 'new',
+        id: remoteItems[3].id,
+      }
+    ]);
     const dbFileData2 = fs.readJsonSync('temp/images.json');
     assert.notEqual(dbFileData2.ids.a, dbFileData.ids.a);
     assert.notEqual(dbFileData2.ids.b, dbFileData.ids.b);
@@ -159,10 +207,22 @@ describe('upload-changed', () => {
     // сортируем по originalName т.к. size=null пока не закончится обработка
     remoteItems.sort((a, b) => a.originalName.localeCompare(b.originalName));
     assert.lengthOf(remoteItems, 2);
-    assert.deepEqual(result, {
-      uploaded: [ 'temp/alice[a].mp3', 'temp/phone[b].mp3' ],
-      skipped: [],
-    });
+    assert.deepEqual(result, [
+      {
+        file: 'temp/alice[a].mp3',
+        localId: 'a',
+        mtimeMs: fs.statSync('temp/alice[a].mp3').mtimeMs,
+        upload: 'new',
+        id: remoteItems[0].id,
+      },
+      {
+        file: 'temp/phone[b].mp3',
+        localId: 'b',
+        mtimeMs: fs.statSync('temp/phone[b].mp3').mtimeMs,
+        upload: 'new',
+        id: remoteItems[1].id,
+      }
+    ]);
 
     const dbFileData = fs.readJsonSync('temp/sounds.json');
     assert.deepEqual(dbFileData, {
@@ -188,7 +248,7 @@ describe('upload-changed', () => {
       }
     });
 
-    // вызываем uploadChanged еще раз с теми же параметрами - ничего загрузиться не должн
+    // вызываем uploadChanged еще раз с теми же параметрами - ничего загрузиться не должно
     const result2 = await soundManager.uploadChanged({
       pattern: 'temp/*.mp3',
       dbFile: 'temp/sounds.json',
@@ -197,10 +257,20 @@ describe('upload-changed', () => {
     const remoteItems2 = await soundManager.getItems();
     remoteItems2.sort((a, b) => a.originalName.localeCompare(b.originalName));
     assert.deepEqual(remoteItems2, remoteItems);
-    assert.deepEqual(result2, {
-      uploaded: [],
-      skipped: [ 'temp/alice[a].mp3', 'temp/phone[b].mp3'],
-    });
+    assert.deepEqual(result2, [
+      {
+        file: 'temp/alice[a].mp3',
+        localId: 'a',
+        mtimeMs: fs.statSync('temp/alice[a].mp3').mtimeMs,
+        id: remoteItems[0].id,
+      },
+      {
+        file: 'temp/phone[b].mp3',
+        localId: 'b',
+        mtimeMs: fs.statSync('temp/phone[b].mp3').mtimeMs,
+        id: remoteItems[1].id,
+      }
+    ]);
     assert.deepEqual(fs.readJsonSync('temp/sounds.json'), dbFileData);
   });
 

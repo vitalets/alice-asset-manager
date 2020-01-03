@@ -46,10 +46,7 @@ module.exports = class SmartUploader {
       await this._upload(transform);
       this._saveDbFile();
     }
-    return {
-      uploaded: this._localItems.filter(item => item.upload).map(item => item.file),
-      skipped: this._localItems.filter(item => !item.upload).map(item => item.file),
-    };
+    return this._localItems;
   }
 
   /**
@@ -83,8 +80,12 @@ module.exports = class SmartUploader {
   _markLocalItemForUpload(localItem) {
     const {id, mtimeMs} = this._getDbFileItemInfo(localItem.localId) || {};
     // загружаем файл, если он не был загружен или изменилась дата модификации или его нет на сервере
-    if (!id || mtimeMs !== localItem.mtimeMs || !this._hasRemoteItem(id)) {
-      localItem.upload = true;
+    if (!id) {
+      localItem.upload = 'new';
+    } else if (mtimeMs !== localItem.mtimeMs) {
+      localItem.upload = 'changed';
+    } else if (!this._hasRemoteItem(id)) {
+      localItem.upload = 'deleted_on_server';
     } else {
       localItem.id = id;
     }

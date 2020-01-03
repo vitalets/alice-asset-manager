@@ -110,7 +110,7 @@ module.exports = class ImageManager extends BaseManager {
    * @param {function} [getLocalId] функция вычисления localId по имени файла
    * @param {function} [transform] функция обработки файлов (buffer, filepath) => buffer
    * @param {boolean} [dryRun=false] запуск без фактической загрузки файлов
-   * @returns {Promise}
+   * @returns {Promise<Array>}
    */
   async uploadChanged({ pattern, dbFile, getLocalId, transform, dryRun }) {
     const uploader = new SmartUploader(this);
