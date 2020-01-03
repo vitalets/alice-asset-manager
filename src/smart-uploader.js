@@ -180,6 +180,8 @@ module.exports = class SmartUploader {
       const url = this._manager.getUrl(id);
       newDbFileData.meta[localId] = { file, url, mtimeMs };
     });
+
+    return newDbFileData;
   }
 
   _assertLocalIdDuplicates() {
