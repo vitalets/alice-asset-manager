@@ -7,10 +7,13 @@ const glob = require('glob');
 const {throwIf} = require('throw-utils');
 const {stringify} = require('./utils');
 
-// By default extract localId as '[local_id]' at the end of filename
-const getLocalIdDefault = file => {
-  const matches = path.basename(file).match(/\[(.+?)\]/);
-  return matches && matches[1];
+const defaults = {
+  // By default extract localId as '[local_id]' at the end of filename
+  getLocalId: file => {
+    const matches = path.basename(file).match(/\[(.+?)\]/);
+    return matches && matches[1];
+  },
+  transform: (buffer, filePath) => buffer, // eslint-disable-line no-unused-vars
 };
 
 module.exports = class SmartUploader {
@@ -32,14 +35,15 @@ module.exports = class SmartUploader {
     this._dbFileData = null;
   }
 
-  async uploadChanged({pattern, dbFile, dryRun, getLocalId}) {
+  async uploadChanged({pattern, dbFile, getLocalId, transform, dryRun}) {
     const files = this._getFiles(pattern);
     this._createLocalItems(files, getLocalId);
     this._readDbFile(dbFile);
     await this._loadRemoteItems();
     this._markLocalItemsForUpload();
     if (!dryRun) {
-      await this._upload();
+      transform = transform || defaults.transform;
+      await this._upload(transform);
       this._saveDbFile();
     }
     return {
@@ -92,7 +96,7 @@ module.exports = class SmartUploader {
   }
 
   _createLocalItems(files, getLocalId) {
-    getLocalId = getLocalId || getLocalIdDefault;
+    getLocalId = getLocalId || defaults.getLocalId;
     this._localItems = files.map(file => {
       const localId = stringify(getLocalId(file));
       this._assertLocalId(localId, file);
@@ -106,14 +110,14 @@ module.exports = class SmartUploader {
     this._remoteItems = await this._manager.getItems();
   }
 
-  async _upload() {
-    const tasks = this._localItems
-      .filter(localItem => localItem.upload)
-      .map(async localItem => {
-        const { id } = await this._manager.upload(localItem.file);
-        localItem.id = id;
-      });
-    await Promise.all(tasks);
+  async _upload(transform) {
+    const localItemToUpload = this._localItems.filter(localItem => localItem.upload);
+    for (const localItem of localItemToUpload) {
+      const buffer = await fs.readFile(localItem.file);
+      const transformedBuffer = await transform(buffer, localItem.file);
+      const { id } = await this._manager.uploadBuffer(transformedBuffer, localItem.file);
+      localItem.id = id;
+    }
   }
 
   _getDbFileItemInfo(localId) {

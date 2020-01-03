@@ -1,7 +1,6 @@
-const fs = require('fs-extra');
-const path = require('path');
 const fetch = require('node-fetch');
 const FormData = require('form-data');
+const debug = require('debug')('alice-asset-manager');
 const {throwIf} = require('throw-utils');
 const {stringify} = require('./utils');
 
@@ -41,10 +40,16 @@ module.exports = class BaseManager {
     return this._request(`${this._restUrl}/${id}`);
   }
 
-  async upload(filePath) {
+  /**
+   * Uploads buffer.
+   *
+   * @param {Buffer|Stream} buffer
+   * @param {string} filename
+   * @returns {Promise}
+   */
+  async uploadBuffer(buffer, filename) {
     const formData = new FormData();
-    const filename = path.basename(filePath);
-    formData.append('file', fs.createReadStream(filePath), {filename});
+    formData.append('file', buffer, { filename });
     return this._request(this._restUrl, {
       method: 'post',
       headers: formData.getHeaders(),
@@ -65,17 +70,25 @@ module.exports = class BaseManager {
 
   async _request(url, options = {}) {
     const fullUrl = `${BASE_URL}${url}`;
+    options = this._buildOptions(options);
+    debug(options.method, fullUrl);
+    const response = await fetch(fullUrl, options);
+    if (response.ok) {
+      const json = await response.json();
+      debug(response.status, json);
+      return json;
+    } else {
+      const text = await response.text();
+      throw new Error(`${response.status} ${text} ${options.method} ${url}`);
+    }
+  }
+
+  _buildOptions(options) {
+    options.method = (options.method || 'GET').toUpperCase();
     options.headers = Object.assign({
       Authorization: `OAuth ${this._token}`,
       timeout: this._timeout,
     }, options.headers);
-    const response = await fetch(fullUrl, options);
-    if (response.ok) {
-      return response.json();
-    } else {
-      const text = await response.text();
-      const method = (options.method || 'get').toUpperCase();
-      throw new Error(`${response.status} ${text} ${method} ${url}`);
-    }
+    return options;
   }
 };

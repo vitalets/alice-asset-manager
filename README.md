@@ -194,7 +194,8 @@ await imageManager.delete('213044/aef2a365f198b4435611');
    * @param {string} pattern путь/паттерн до папки с изображениями
    * @param {string} dbFile путь до файла с данными о загрузках
    * @param {function} [getLocalId] функция вычисления localId по имени файла
-   * @param {boolean} [dryRun=false] запуск без зфактической загрузки файлов
+   * @param {function} [transform] функция обработки файлов (buffer, filepath) => buffer
+   * @param {boolean} [dryRun=false] запуск без фактической загрузки файлов
    * @returns {Promise}
    */
 ```
@@ -302,6 +303,24 @@ await imageManager.uploadChanged({
 const images = require('./images.json').ids;
 // ...
 response.card.image_id = images.alice;
+```
+
+Для обработки загружаемых файлов (например изменения размеров изображений) можно использовать параметр `transform`.
+Вот готовый пример кода для подгона изображений под размер `776х344` с использованием библиотеки [Jimp](https://github.com/oliver-moran/jimp):
+```js
+await imageManager.uploadChanged({
+  pattern: 'images/*.png',
+  dbFile: 'images.json',
+  transform: async buffer => {
+    const image = await Jimp.read(buffer);
+    return image
+       .normalize()
+       .background(0xFFFFFFFF)
+       .contain(776, 344)
+       .quality(75)
+       .getBufferAsync();
+  }
+});
 ```
 
 ### .deleteUnused()

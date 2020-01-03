@@ -1,6 +1,8 @@
 /**
  * Sound manager.
  */
+const fs = require('fs-extra');
+const path = require('path');
 const BaseManager = require('./base-manager');
 const SmartUploader = require('./smart-uploader');
 const { createViewServer } = require('./view-server');
@@ -65,7 +67,20 @@ module.exports = class SoundManager extends BaseManager {
    * @returns {Promise}
    */
   async upload(filePath) {
-    const { sound } = await super.upload(filePath);
+    const buffer = fs.createReadStream(filePath);
+    const filename = path.basename(filePath);
+    return this.uploadBuffer(buffer, filename);
+  }
+
+  /**
+   * Загрузить звук из буфера.
+   *
+   * @param {Buffer|Stream} buffer данные
+   * @param {string} filename имя файла
+   * @returns {Promise}
+   */
+  async uploadBuffer(buffer, filename) {
+    const { sound } = await super.uploadBuffer(buffer, filename);
     return {
       ...sound,
       tts: this.getTts(sound.id),
@@ -109,12 +124,13 @@ module.exports = class SoundManager extends BaseManager {
    * @param {string} pattern путь/паттерн до папки со звуками
    * @param {string} dbFile путь до файла с данными о загрузках
    * @param {function} [getLocalId] функция вычисления localId по имени файла
+   * @param {function} [transform] функция обработки файлов (buffer, filepath) => buffer
    * @param {boolean} [dryRun=false] запуск без фактической загрузки файлов
    * @returns {Promise}
    */
-  async uploadChanged({pattern, dbFile, dryRun, getLocalId}) {
+  async uploadChanged({ pattern, dbFile, getLocalId, transform, dryRun }) {
     const uploader = new SmartUploader(this);
-    return uploader.uploadChanged({pattern, dbFile, dryRun, getLocalId});
+    return uploader.uploadChanged({ pattern, dbFile, getLocalId, transform, dryRun });
   }
 
   /**

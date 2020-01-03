@@ -21,7 +21,7 @@
   "scripts": {
     "lint": "eslint src test",
     "test": "mocha test/setup.js test/specs/*.js --timeout=6000",
-    "test:d": "npm run test -- --bail",
+    "test:d": "DEBUG=alice-asset-manager npm run test -- --bail",
     "toc": "markdown-toc README.md -i",
     "release": "npm run lint && npm test && npm version $VER && npm publish && git push --follow-tags --no-verify",
     "release-patch": "VER=patch npm run release",
@@ -37,6 +37,7 @@
     "{src,test}/**/*.js": "eslint"
   },
   "dependencies": {
+    "debug": "^4.1.1",
     "form-data": "^3.0.0",
     "glob": "^7.1.6",
     "micro": "^9.3.4",

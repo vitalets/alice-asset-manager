@@ -275,4 +275,23 @@ describe('upload-changed', () => {
       return true;
     });
   });
+
+  it('upload images: transform', async () => {
+    fs.copySync('test/data/alice.png', 'temp/alice[a].png');
+
+    const transform = sinon.stub().resolvesArg(0);
+    await imageManager.uploadChanged({
+      pattern: 'temp/*.png',
+      dbFile: 'temp/images.json',
+      transform,
+    });
+
+    const remoteItems = await imageManager.getItems();
+    assert.lengthOf(remoteItems, 1);
+
+    sinon.assert.calledOnce(transform);
+    assert.instanceOf(transform.getCall(0).args[0], Buffer);
+    assert.equal(transform.getCall(0).args[1], 'temp/alice[a].png');
+  });
+
 });
