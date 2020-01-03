@@ -312,7 +312,7 @@ await imageManager.uploadChanged({
        .background(0xFFFFFFFF)
        .contain(776, 344)
        .quality(75)
-       .getBufferAsync();
+       .getBufferAsync(Jimp.AUTO);
   }
 });
 ```
