@@ -256,7 +256,7 @@ describe('upload-changed', () => {
 
     const remoteItems2 = await soundManager.getItems();
     remoteItems2.sort((a, b) => a.originalName.localeCompare(b.originalName));
-    assert.deepEqual(remoteItems2, remoteItems);
+    assert.lengthOf(remoteItems2, 2);
     assert.deepEqual(result2, [
       {
         file: 'temp/alice[a].mp3',
