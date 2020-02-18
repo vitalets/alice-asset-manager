@@ -3,7 +3,7 @@
  */
 const fs = require('fs-extra');
 const path = require('path');
-const glob = require('glob');
+const fg = require('fast-glob');
 const {throwIf} = require('throw-utils');
 const {stringify} = require('./utils');
 
@@ -90,7 +90,7 @@ module.exports = class SmartUploader {
 
   _getFiles(pattern) {
     throwIf(!pattern, `pattern is required.`);
-    return glob.sync(pattern, {nodir: true});
+    return fg.sync(pattern, { onlyFiles: true });
   }
 
   _createLocalItems(files, getLocalId) {
