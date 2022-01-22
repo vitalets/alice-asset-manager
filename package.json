@@ -43,7 +43,7 @@
     "fs-extra": "^8.1.0",
     "micro": "^9.3.4",
     "ms": "^2.1.2",
-    "node-fetch": "^2.6.0",
+    "node-fetch": "^3.1.1",
     "throw-utils": "^1.2.1"
   },
   "devDependencies": {
